@@ -1,0 +1,2 @@
+vyatta-openvpn: file-in-unusual-dir
+vyatta-openvpn: dir-or-file-in-opt
