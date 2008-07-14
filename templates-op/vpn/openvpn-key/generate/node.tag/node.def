@@ -1,0 +1,3 @@
+help: Generate OpenVPN shared-secret key with specified file name
+run: sudo /usr/sbin/openvpn --genkey --secret "$4"
+allowed: echo -n '<filename>'
