@@ -1,5 +1,5 @@
 type: txt
-help: Set remote host to connect to
+help: Set remote host to connect to (dynamic if not set)
 comp_help: Possible completions:
   <x.x.x.x>        Set IP address of remote host
   <text>           Set hostname of remote host

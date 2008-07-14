@@ -117,14 +117,15 @@ sub get_command {
   }
 
   # remote host
-  return (undef, 'Must specify "remote-host"')
-    if (!defined($self->{_remote_host}));
-  if (!VyattaTypeChecker::validateType('ipv4', $self->{_remote_host})) {
-    if (!($self->{_remote_host} =~ /^[-a-zA-Z0-9.]+$/)) {
-      return (undef, 'Must specify IP or hostname for "remote-host"');
+  if (defined($self->{_remote_host})) {
+    if (!VyattaTypeChecker::validateType('ipv4', $self->{_remote_host})) {
+      if (!($self->{_remote_host} =~ /^[-a-zA-Z0-9.]+$/)) {
+        return (undef, 'Must specify IP or hostname for "remote-host"');
+      }
     }
+    $cmd .= " --remote $self->{_remote_host}";
   }
-  $cmd .= " --remote $self->{_remote_host}";
+  # if remote host not defined, no "--remote" (same as "--float")
 
   # remote subnet
   if (defined($self->{_remote_subnet})) {
