@@ -1,0 +1,2 @@
+type: txt
+help: Set file containing certificate for Certificate Authority (CA)

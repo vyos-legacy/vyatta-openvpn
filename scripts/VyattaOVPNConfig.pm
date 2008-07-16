@@ -15,6 +15,14 @@ my %fields = (
   _remote_subnet => undef,
   _options       => undef,
   _secret_file   => undef,
+  _mode          => undef,
+  _server_def    => undef,
+  _server_subnet => undef,
+  _tls_def       => undef,
+  _tls_ca        => undef,
+  _tls_cert      => undef,
+  _tls_key       => undef,
+  _tls_dh        => undef,
   _is_empty         => 1,
 );
 
@@ -52,6 +60,17 @@ sub setup {
   $self->{_remote_subnet} = $config->returnValue('remote-subnet');
   $self->{_options} = $config->returnValue('openvpn-option');
   $self->{_secret_file} = $config->returnValue('shared-secret-key-file');
+  $self->{_mode} = $config->returnValue('mode');
+  $self->{_server_subnet} = $config->returnValue('server subnet');
+  $self->{_server_def} = (defined($self->{_server_subnet})) ? 1 : undef;
+  $self->{_tls_ca} = $config->returnValue('tls ca-cert-file');
+  $self->{_tls_cert} = $config->returnValue('tls cert-file');
+  $self->{_tls_key} = $config->returnValue('tls key-file');
+  $self->{_tls_dh} = $config->returnValue('tls dh-file');
+  $self->{_tls_def} = (defined($self->{_tls_ca})
+                       || defined($self->{_tls_cert})
+                       || defined($self->{_tls_key})
+                       || defined($self->{_tls_dh})) ? 1 : undef;
 
   return 0;
 }
@@ -77,6 +96,17 @@ sub setupOrig {
   $self->{_remote_subnet} = $config->returnOrigValue('remote-subnet');
   $self->{_options} = $config->returnOrigValue('openvpn-option');
   $self->{_secret_file} = $config->returnOrigValue('shared-secret-key-file');
+  $self->{_mode} = $config->returnOrigValue('mode');
+  $self->{_server_subnet} = $config->returnOrigValue('server subnet');
+  $self->{_server_def} = (defined($self->{_server_subnet})) ? 1 : undef;
+  $self->{_tls_ca} = $config->returnOrigValue('tls ca-cert-file');
+  $self->{_tls_cert} = $config->returnOrigValue('tls cert-file');
+  $self->{_tls_key} = $config->returnOrigValue('tls key-file');
+  $self->{_tls_dh} = $config->returnOrigValue('tls dh-file');
+  $self->{_tls_def} = (defined($self->{_tls_ca})
+                       || defined($self->{_tls_cert})
+                       || defined($self->{_tls_key})
+                       || defined($self->{_tls_dh})) ? 1 : undef;
 
   return 0;
 }
@@ -92,6 +122,14 @@ sub isDifferentFrom {
   return 1 if ($this->{_remote_subnet} ne $that->{_remote_subnet});
   return 1 if ($this->{_options} ne $that->{_options});
   return 1 if ($this->{_secret_file} ne $that->{_secret_file});
+  return 1 if ($this->{_mode} ne $that->{_mode});
+  return 1 if ($this->{_server_subnet} ne $that->{_server_subnet});
+  return 1 if ($this->{_server_def} ne $that->{_server_def});
+  return 1 if ($this->{_tls_ca} ne $that->{_tls_ca});
+  return 1 if ($this->{_tls_cert} ne $that->{_tls_cert});
+  return 1 if ($this->{_tls_key} ne $that->{_tls_key});
+  return 1 if ($this->{_tls_dh} ne $that->{_tls_dh});
+  return 1 if ($this->{_tls_def} ne $that->{_tls_def});
   
   return 0;
 }
@@ -103,12 +141,29 @@ sub get_command {
   # interface
   $cmd .= " --dev-type tun --dev $self->{_intf}";
 
-  # tunnel addresses
-  return (undef, 'Must specify "local-address"')
-    if (!defined($self->{_local_addr}));
-  return (undef, 'Must specify "remote-address"')
-    if (!defined($self->{_remote_addr}));
-  $cmd .= " --ifconfig $self->{_local_addr} $self->{_remote_addr}";
+  # mode
+  my ($client, $server) = (0, 0);
+  return (undef, 'Must specify "mode"') if (!defined($self->{_mode}));
+  if ($self->{_mode} eq 'client') {
+    $client = 1;
+    $cmd .= ' --client --nobind';
+  } elsif ($self->{_mode} eq 'server') {
+    $server = 1;
+    $cmd .= ' --mode server --tls-server --keepalive 10 120 --topology subnet';
+  }
+
+  # tunnel addresses (site-to-site only)
+  if (!$client && !$server) {
+    return (undef, 'Must specify "local-address"')
+      if (!defined($self->{_local_addr}));
+    return (undef, 'Must specify "remote-address"')
+      if (!defined($self->{_remote_addr}));
+    $cmd .= " --ifconfig $self->{_local_addr} $self->{_remote_addr}";
+  } else {
+    return (undef, 'Cannot specify "local-address" or "remote-address" in '
+                   . 'client-server mode')
+      if (defined($self->{_local_addr}) || defined($self->{_remote_addr}));
+  }
 
   # local host
   if (defined($self->{_local_host})) {
@@ -118,14 +173,19 @@ sub get_command {
 
   # remote host
   if (defined($self->{_remote_host})) {
+    # not allowed in server mode
+    return (undef, 'Cannot specify "remote-host" in server mode') if ($server);
+
     if (!VyattaTypeChecker::validateType('ipv4', $self->{_remote_host})) {
       if (!($self->{_remote_host} =~ /^[-a-zA-Z0-9.]+$/)) {
         return (undef, 'Must specify IP or hostname for "remote-host"');
       }
     }
     $cmd .= " --remote $self->{_remote_host}";
+  } elsif ($client) {
+    return (undef, 'Must specify "remote-host" in client mode');
   }
-  # if remote host not defined, no "--remote" (same as "--float")
+  # site-to-site: if remote host not defined, no "--remote" (same as "--float")
 
   # remote subnet
   if (defined($self->{_remote_subnet})) {
@@ -135,14 +195,65 @@ sub get_command {
     $cmd .= " --route $n $m";
   }
 
+  # secret & tls
+  return (undef, 'Must specify one of "shared-secret-key-file" and "tls"')
+    if (!defined($self->{_secret_file}) && !defined($self->{_tls_def}));
+  return (undef, 'Can only specify one of "shared-secret-key-file" '
+                 . 'and "tls"')
+    if (defined($self->{_secret_file}) && defined($self->{_tls_def}));
+  return (undef, 'Must specify "tls" in client-server mode')
+    if (($client || $server) && !defined($self->{_tls_def}));
+
+  # tls
+  if (defined($self->{_tls_def})) {
+    return (undef, 'Must specify "tls ca-cert-file"')
+      if (!defined($self->{_tls_ca}));
+    return (undef, "Specified ca-cert-file \"$self->{_tls_ca}\" is not valid")
+      if (! -r $self->{_tls_ca});
+    $cmd .= " --ca $self->{_tls_ca}";
+    
+    return (undef, 'Must specify "tls cert-file"')
+      if (!defined($self->{_tls_cert}));
+    return (undef, "Specified cert-file \"$self->{_tls_cert}\" is not valid")
+      if (! -r $self->{_tls_cert});
+    $cmd .= " --cert $self->{_tls_cert}";
+    
+    return (undef, 'Must specify "tls key-file"')
+      if (!defined($self->{_tls_key}));
+    return (undef, "Specified key-file \"$self->{_tls_key}\" is not valid")
+      if (! -r $self->{_tls_key});
+    $cmd .= " --key $self->{_tls_key}";
+
+    if (!defined($self->{_tls_dh})) {
+      return (undef, 'Must specify "tls dh-file" in server mode')
+        if ($server);
+    } else {
+      return (undef, 'Cannot specify "tls dh-file" in client mode')
+        if ($client);
+      return (undef, "Specified dh-file \"$self->{_tls_dh}\" is not valid")
+        if (! -r $self->{_tls_dh});
+      $cmd .= " --dh $self->{_tls_dh}";
+    }
+  }
+
   # secret file
-  return (undef, 'Must specify "shared-secret-key-file"')
-    if (!defined($self->{_secret_file}));
-  return (undef, "Specified shared-secret-key-file \"$self->{_secret_file}\" "
-                 . 'is not valid')
-    if (! -r $self->{_secret_file});
-  # we can further validate the secret file
-  $cmd .= " --secret $self->{_secret_file}";
+  if (defined($self->{_secret_file})) {
+    return (undef, 'Specified shared-secret-key-file '
+                   . "\"$self->{_secret_file}\" is not valid")
+      if (! -r $self->{_secret_file});
+    # we can further validate the secret file
+    $cmd .= " --secret $self->{_secret_file}";
+  }
+
+  # "server" subsection
+  if ($server) {
+    return (undef, 'Must specify "server" options in server mode')
+      if (!defined($self->{_server_def}));
+    my $s = new NetAddr::IP "$self->{_server_subnet}";
+    my $n = $s->network();
+    my $m = $s->mask();
+    $cmd .= " --server $n $m";
+  }
 
   # extra options
   if (defined($self->{_options})) {
@@ -162,6 +273,12 @@ sub print_str {
   $str .= "\n  remote_subnet " . $self->{_remote_subnet};
   $str .= "\n  options " . $self->{_options};
   $str .= "\n  secret_file " . $self->{_secret_file};
+  $str .= "\n  mode " . $self->{_mode};
+  $str .= "\n  server_subnet " . $self->{_server_subnet};
+  $str .= "\n  tls_ca " . $self->{_tls_ca};
+  $str .= "\n  tls_cert " . $self->{_tls_cert};
+  $str .= "\n  tls_key " . $self->{_tls_key};
+  $str .= "\n  tls_dh " . $self->{_tls_dh};
   $str .= "\n  empty " . $self->{_is_empty};
   $str .= "\n";
 

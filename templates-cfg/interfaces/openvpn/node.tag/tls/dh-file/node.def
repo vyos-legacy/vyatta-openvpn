@@ -1,0 +1,2 @@
+type: txt
+help: Set file containing Diffie Hellman parameters (server only)
