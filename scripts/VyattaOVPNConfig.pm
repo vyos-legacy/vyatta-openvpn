@@ -9,6 +9,8 @@ use NetAddr::IP;
 my $ccd_dir = '/opt/vyatta/etc/openvpn/ccd';
 my $status_dir = '/opt/vyatta/etc/openvpn/status';
 my $status_itvl = 30;
+my $ping_itvl = 10;
+my $ping_restart = 60;
 
 my %fields = (
   _intf          => undef,
@@ -182,7 +184,11 @@ sub get_command {
     $cmd .= ' --client --nobind';
   } elsif ($self->{_mode} eq 'server') {
     $server = 1;
-    $cmd .= ' --mode server --tls-server --keepalive 10 120 --topology subnet';
+    $cmd .= ' --mode server --tls-server --topology subnet';
+    $cmd .= " --keepalive $ping_itvl $ping_restart";
+  } else {
+    # site-to-site
+    $cmd .= " --ping $ping_itvl --ping-restart $ping_restart";
   }
 
   # tunnel addresses (site-to-site only)
