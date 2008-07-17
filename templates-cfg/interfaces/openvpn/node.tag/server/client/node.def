@@ -1,0 +1,5 @@
+tag:
+type: txt
+help: Set client-specific settings
+comp_help: Possible completions:
+  <name>        Client's name in the certificate

@@ -6,6 +6,8 @@ use VyattaConfig;
 use VyattaTypeChecker;
 use NetAddr::IP;
 
+my $ccd_dir = '/opt/vyatta/etc/openvpn/ccd';
+
 my %fields = (
   _intf          => undef,
   _local_addr    => undef,
@@ -23,6 +25,7 @@ my %fields = (
   _tls_cert      => undef,
   _tls_key       => undef,
   _tls_dh        => undef,
+  _client_ip     => [],
   _is_empty         => 1,
 );
 
@@ -71,6 +74,15 @@ sub setup {
                        || defined($self->{_tls_cert})
                        || defined($self->{_tls_key})
                        || defined($self->{_tls_dh})) ? 1 : undef;
+  my @clients = $config->listNodes('server client');
+  my @cips = ();
+  for my $c (@clients) {
+    my $ip = $config->returnValue("server client $c ip");
+    if (defined($ip)) {
+      push @cips, [ $c, $ip ];
+    }
+  }
+  $self->{_client_ip} = \@cips;
 
   return 0;
 }
@@ -107,6 +119,15 @@ sub setupOrig {
                        || defined($self->{_tls_cert})
                        || defined($self->{_tls_key})
                        || defined($self->{_tls_dh})) ? 1 : undef;
+  my @clients = $config->listOrigNodes('server client');
+  my @cips = ();
+  for my $c (@clients) {
+    my $ip = $config->returnOrigValue("server client $c ip");
+    if (defined($ip)) {
+      push @cips, [ $c, $ip ];
+    }
+  }
+  $self->{_client_ip} = \@cips;
 
   return 0;
 }
@@ -130,6 +151,13 @@ sub isDifferentFrom {
   return 1 if ($this->{_tls_key} ne $that->{_tls_key});
   return 1 if ($this->{_tls_dh} ne $that->{_tls_dh});
   return 1 if ($this->{_tls_def} ne $that->{_tls_def});
+  return 1 if (scalar(@{$this->{_client_ip}})
+               != scalar(@{$that->{_client_ip}}));
+  for my $i (0 .. (scalar(@{$this->{_client_ip}}) - 1)) {
+    my @L1 = @{${$this->{_client_ip}}[$i]};
+    my @L2 = @{${$that->{_client_ip}}[$i]};
+    return 1 if ($L1[0] ne $L2[0] || $L1[1] ne $L2[1]);
+  }
   
   return 0;
 }
@@ -253,6 +281,20 @@ sub get_command {
     my $n = $s->network();
     my $m = $s->mask();
     $cmd .= " --server $n $m";
+
+    # per-client config specified. write them out.
+    if (scalar(@{$self->{_client_ip}}) > 0) {
+      system("rm -f $ccd_dir/*");
+      return (undef, 'Cannot generate per-client configurations') if ($? >> 8);
+      for my $ref (@{$self->{_client_ip}}) {
+        my $client = ${$ref}[0];
+        my $ip = ${$ref}[1];
+        system("echo \"ifconfig-push $ip $m\" > $ccd_dir/$client");
+        return (undef, 'Cannot generate per-client configurations')
+          if ($? >> 8);
+      }
+      $cmd .= " --client-config-dir $ccd_dir";
+    }
   }
 
   # extra options

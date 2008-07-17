@@ -11,3 +11,5 @@ for init in openvpn; do
   update-rc.d -f ${init} remove >/dev/null
 done
 
+mkdir -p /opt/vyatta/etc/openvpn/ccd
+
