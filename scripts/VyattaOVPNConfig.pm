@@ -17,7 +17,7 @@ my %fields = (
   _local_addr    => undef,
   _local_host    => undef,
   _remote_addr   => undef,
-  _remote_host   => undef,
+  _remote_host   => [],
   _remote_subnet => undef,
   _options       => undef,
   _secret_file   => undef,
@@ -63,7 +63,8 @@ sub setup {
   $self->{_local_addr} = $config->returnValue('local-address');
   $self->{_local_host} = $config->returnValue('local-host');
   $self->{_remote_addr} = $config->returnValue('remote-address');
-  $self->{_remote_host} = $config->returnValue('remote-host');
+  my @tmp = $config->returnValues('remote-host');
+  $self->{_remote_host} = \@tmp;
   $self->{_remote_subnet} = $config->returnValue('remote-subnet');
   $self->{_options} = $config->returnValue('openvpn-option');
   $self->{_secret_file} = $config->returnValue('shared-secret-key-file');
@@ -108,7 +109,8 @@ sub setupOrig {
   $self->{_local_addr} = $config->returnOrigValue('local-address');
   $self->{_local_host} = $config->returnOrigValue('local-host');
   $self->{_remote_addr} = $config->returnOrigValue('remote-address');
-  $self->{_remote_host} = $config->returnOrigValue('remote-host');
+  my @tmp = $config->returnOrigValues('remote-host');
+  $self->{_remote_host} = \@tmp;
   $self->{_remote_subnet} = $config->returnOrigValue('remote-subnet');
   $self->{_options} = $config->returnOrigValue('openvpn-option');
   $self->{_secret_file} = $config->returnOrigValue('shared-secret-key-file');
@@ -136,6 +138,17 @@ sub setupOrig {
   return 0;
 }
 
+sub listsDiff {
+  my @a = @{$_[0]};
+  my @b = @{$_[1]};
+  return 1 if ((scalar @a) != (scalar @b));
+  while (my $a = shift @a) {
+    my $b = shift @b;
+    return 1 if ($a ne $b);
+  }
+  return 0;
+}
+
 sub isDifferentFrom {
   my ($this, $that) = @_;
 
@@ -143,7 +156,7 @@ sub isDifferentFrom {
   return 1 if ($this->{_local_addr} ne $that->{_local_addr});
   return 1 if ($this->{_local_host} ne $that->{_local_host});
   return 1 if ($this->{_remote_addr} ne $that->{_remote_addr});
-  return 1 if ($this->{_remote_host} ne $that->{_remote_host});
+  return 1 if (listsDiff($this->{_remote_host}, $that->{_remote_host}));
   return 1 if ($this->{_remote_subnet} ne $that->{_remote_subnet});
   return 1 if ($this->{_options} ne $that->{_options});
   return 1 if ($this->{_secret_file} ne $that->{_secret_file});
@@ -211,16 +224,18 @@ sub get_command {
   }
 
   # remote host
-  if (defined($self->{_remote_host})) {
+  if (scalar(@{$self->{_remote_host}}) > 0) {
     # not allowed in server mode
     return (undef, 'Cannot specify "remote-host" in server mode') if ($server);
 
-    if (!VyattaTypeChecker::validateType('ipv4', $self->{_remote_host})) {
-      if (!($self->{_remote_host} =~ /^[-a-zA-Z0-9.]+$/)) {
-        return (undef, 'Must specify IP or hostname for "remote-host"');
+    for my $rhost (@{$self->{_remote_host}}) {
+      if (!VyattaTypeChecker::validateType('ipv4', $rhost)) {
+        if (!($rhost =~ /^[-a-zA-Z0-9.]+$/)) {
+          return (undef, 'Must specify IP or hostname for "remote-host"');
+        }
       }
+      $cmd .= " --remote $rhost";
     }
-    $cmd .= " --remote $self->{_remote_host}";
   } elsif ($client) {
     return (undef, 'Must specify "remote-host" in client mode');
   }
@@ -322,7 +337,7 @@ sub print_str {
   $str .= "\n  local_addr " . $self->{_local_addr};
   $str .= "\n  local_host " . $self->{_local_host};
   $str .= "\n  remote_addr " . $self->{_remote_addr};
-  $str .= "\n  remote_host " . $self->{_remote_host};
+  $str .= "\n  remote_host " . (join ' ', @{$self->{_remote_host}});
   $str .= "\n  remote_subnet " . $self->{_remote_subnet};
   $str .= "\n  options " . $self->{_options};
   $str .= "\n  secret_file " . $self->{_secret_file};

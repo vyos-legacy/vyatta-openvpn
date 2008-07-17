@@ -1,3 +1,4 @@
+multi:
 type: txt
 help: Set remote host to connect to (dynamic if not set)
 comp_help: Possible completions:
