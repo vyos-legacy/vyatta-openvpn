@@ -7,6 +7,8 @@ use VyattaTypeChecker;
 use NetAddr::IP;
 
 my $ccd_dir = '/opt/vyatta/etc/openvpn/ccd';
+my $status_dir = '/opt/vyatta/etc/openvpn/status';
+my $status_itvl = 30;
 
 my %fields = (
   _intf          => undef,
@@ -165,6 +167,9 @@ sub isDifferentFrom {
 sub get_command {
   my ($self) = @_;
   my $cmd = '/usr/sbin/openvpn --daemon --verb 3';
+
+  # status
+  $cmd .= " --status $status_dir/$self->{_intf}.status $status_itvl";
  
   # interface
   $cmd .= " --dev-type tun --dev $self->{_intf}";

@@ -12,4 +12,5 @@ for init in openvpn; do
 done
 
 mkdir -p /opt/vyatta/etc/openvpn/ccd
+mkdir -p /opt/vyatta/etc/openvpn/status
 
