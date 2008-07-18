@@ -16,18 +16,23 @@ if (!($config->isDifferentFrom($oconfig))) {
   exit 0;
 }
 
-# config for this interface changed. kill the daemon instance.
-system("kill -TERM `pgrep -f 'openvpn .* --dev $vtun --'` >&/dev/null");
-if ($? >> 8) {
-  print STDERR "OpenVPN configuration error: Failed to stop tunnel.\n";
-  exit 1;
+if ($config->isEmpty()) {
+  # deleted
+  system("kill -TERM `pgrep -f 'openvpn .* --dev $vtun --'` >&/dev/null");
+  if ($? >> 8) {
+    print STDERR "OpenVPN configuration error: Failed to stop tunnel.\n";
+    exit 1;
+  }
+  exit 0;
 }
-
-# if deleted, we're done
-exit 0 if ($config->isEmpty());
 
 my ($cmd, $err) = $config->get_command();
 if (defined($cmd)) {
+  system("kill -TERM `pgrep -f 'openvpn .* --dev $vtun --'` >&/dev/null");
+  if ($? >> 8) {
+    print STDERR "OpenVPN configuration error: Failed to stop tunnel.\n";
+    exit 1;
+  }
   system("$cmd");
   if ($? >> 8) {
     $err = 'Failed to start OpenVPN tunnel';
