@@ -1,9 +1,11 @@
 cfgdir		 = $(datadir)/vyatta-cfg/templates
 opdir		 = $(datadir)/vyatta-op/templates
 share_perl5dir	 = $(datarootdir)/perl5
+bin_sudo_usersdir = $(bindir)/sudo-users
 
 sbin_SCRIPTS = scripts/vyatta-update-ovpn.pl
 share_perl5_DATA = scripts/VyattaOVPNConfig.pm
+bin_sudo_users_SCRIPTS = scripts/vyatta-show-ovpn.pl
 
 cpiop = find  . ! -regex '\(.*~\|.*\.bak\|.*\.swp\|.*\#.*\#\)' -print0 | \
   cpio -0pd
