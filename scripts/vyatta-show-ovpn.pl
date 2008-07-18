@@ -58,7 +58,7 @@ EOH
   for (@clients) {
     my ($name, $rip_str, $recv, $sent, $since) = split /,/;
     chomp $since;
-    my @croutes = grep { /^[^,]+,$name,/ } @routes;
+    my @croutes = grep { /^[0-9.]+,$name,/ } @routes;
     $croutes[0] =~ /^([^,]+),/;
     my $tip = $1;
     $rip_str =~ /^([^:]+):/;
