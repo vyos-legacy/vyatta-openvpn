@@ -30,6 +30,7 @@ my %fields = (
   _tls_key       => undef,
   _tls_dh        => undef,
   _client_ip     => [],
+  _client_subnet => [],
   _is_empty         => 1,
 );
 
@@ -80,6 +81,7 @@ sub setup {
                        || defined($self->{_tls_key})
                        || defined($self->{_tls_dh})) ? 1 : undef;
   my @clients = $config->listNodes('server client');
+  # client IPs
   my @cips = ();
   for my $c (@clients) {
     my $ip = $config->returnValue("server client $c ip");
@@ -88,6 +90,15 @@ sub setup {
     }
   }
   $self->{_client_ip} = \@cips;
+  # client subnets 
+  my @csubs = ();
+  for my $c (@clients) {
+    my $s = $config->returnValue("server client $c subnet");
+    if (defined($s)) {
+      push @csubs, [ $c, $s ];
+    }
+  }
+  $self->{_client_subnet} = \@csubs;
 
   return 0;
 }
@@ -126,6 +137,7 @@ sub setupOrig {
                        || defined($self->{_tls_key})
                        || defined($self->{_tls_dh})) ? 1 : undef;
   my @clients = $config->listOrigNodes('server client');
+  # client IPs
   my @cips = ();
   for my $c (@clients) {
     my $ip = $config->returnOrigValue("server client $c ip");
@@ -134,6 +146,15 @@ sub setupOrig {
     }
   }
   $self->{_client_ip} = \@cips;
+  # client subnets 
+  my @csubs = ();
+  for my $c (@clients) {
+    my $s = $config->returnOrigValue("server client $c subnet");
+    if (defined($s)) {
+      push @csubs, [ $c, $s ];
+    }
+  }
+  $self->{_client_subnet} = \@csubs;
 
   return 0;
 }
@@ -145,6 +166,18 @@ sub listsDiff {
   while (my $a = shift @a) {
     my $b = shift @b;
     return 1 if ($a ne $b);
+  }
+  return 0;
+}
+
+sub pairListsDiff {
+  my @a = @{$_[0]};
+  my @b = @{$_[1]};
+  return 1 if (scalar(@a) != scalar(@b));
+  for my $i (0 .. (scalar(@a) - 1)) {
+    my @L1 = @{$a[$i]};
+    my @L2 = @{$b[$i]};
+    return 1 if ($L1[0] ne $L2[0] || $L1[1] ne $L2[1]);
   }
   return 0;
 }
@@ -168,14 +201,10 @@ sub isDifferentFrom {
   return 1 if ($this->{_tls_key} ne $that->{_tls_key});
   return 1 if ($this->{_tls_dh} ne $that->{_tls_dh});
   return 1 if ($this->{_tls_def} ne $that->{_tls_def});
-  return 1 if (scalar(@{$this->{_client_ip}})
-               != scalar(@{$that->{_client_ip}}));
-  for my $i (0 .. (scalar(@{$this->{_client_ip}}) - 1)) {
-    my @L1 = @{${$this->{_client_ip}}[$i]};
-    my @L2 = @{${$that->{_client_ip}}[$i]};
-    return 1 if ($L1[0] ne $L2[0] || $L1[1] ne $L2[1]);
-  }
-  
+  return 1 if (pairListsDiff($this->{_client_ip}, $that->{_client_ip}));
+  return 1 if (pairListsDiff($this->{_client_subnet},
+                             $that->{_client_subnet}));
+
   return 0;
 }
 
@@ -197,7 +226,9 @@ sub get_command {
     $cmd .= ' --client --nobind';
   } elsif ($self->{_mode} eq 'server') {
     $server = 1;
-    $cmd .= ' --mode server --tls-server --topology subnet';
+    # note: "topology subnet" doesn't seem to provide client isolation.
+    #       "topology p2p" is not compatible with Windows.
+    $cmd .= ' --mode server --tls-server --topology p2p';
     $cmd .= " --keepalive $ping_itvl $ping_restart";
   } else {
     # site-to-site
@@ -244,7 +275,7 @@ sub get_command {
   # remote subnet
   if (defined($self->{_remote_subnet})) {
     my $s = new NetAddr::IP "$self->{_remote_subnet}";
-    my $n = $s->network();
+    my $n = $s->addr();
     my $m = $s->mask();
     $cmd .= " --route $n $m";
   }
@@ -304,18 +335,34 @@ sub get_command {
     return (undef, 'Must specify "server" options in server mode')
       if (!defined($self->{_server_def}));
     my $s = new NetAddr::IP "$self->{_server_subnet}";
-    my $n = $s->network();
+    my $n = $s->addr();
     my $m = $s->mask();
     $cmd .= " --server $n $m";
 
     # per-client config specified. write them out.
-    if (scalar(@{$self->{_client_ip}}) > 0) {
+    if (scalar(@{$self->{_client_ip}}) > 0
+        || scalar(@{$self->{_client_subnet}}) > 0) {
       system("rm -f $ccd_dir/*");
       return (undef, 'Cannot generate per-client configurations') if ($? >> 8);
       for my $ref (@{$self->{_client_ip}}) {
         my $client = ${$ref}[0];
         my $ip = ${$ref}[1];
-        system("echo \"ifconfig-push $ip $m\" > $ccd_dir/$client");
+        my $cip = new NetAddr::IP "$ip/32";
+        return (undef, "Client IP \"$ip\" is not in $self->{_server_subnet}")
+          if (!$cip->within($s));
+        my $ip1 = $s->first()->addr();
+        # note: with "topology subnet", this is "<ip> <netmask>".
+        #       with "topology p2p", this is "<ip> <our_ip>".
+        system("echo \"ifconfig-push $ip $ip1\" >> $ccd_dir/$client");
+        return (undef, 'Cannot generate per-client configurations')
+          if ($? >> 8);
+      }
+      for my $ref (@{$self->{_client_subnet}}) {
+        my $client = ${$ref}[0];
+        my $cs = new NetAddr::IP "${$ref}[1]";
+        my $cn = $cs->addr();
+        my $cm = $cs->mask();
+        system("echo \"iroute $cn $cm\" >> $ccd_dir/$client");
         return (undef, 'Cannot generate per-client configurations')
           if ($? >> 8);
       }
