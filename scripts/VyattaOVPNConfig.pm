@@ -31,6 +31,10 @@ my %fields = (
   _tls_dh        => undef,
   _client_ip     => [],
   _client_subnet => [],
+  _topo          => undef,
+  _proto         => undef,
+  _local_port    => undef,
+  _remote_port   => undef,
   _is_empty         => 1,
 );
 
@@ -100,6 +104,11 @@ sub setup {
   }
   $self->{_client_subnet} = \@csubs;
 
+  $self->{_topo} = $config->returnValue('server topology');
+  $self->{_proto} = $config->returnValue('protocol');
+  $self->{_local_port} = $config->returnValue('local-port');
+  $self->{_remote_port} = $config->returnValue('remote-port');
+
   return 0;
 }
 
@@ -156,6 +165,11 @@ sub setupOrig {
   }
   $self->{_client_subnet} = \@csubs;
 
+  $self->{_topo} = $config->returnOrigValue('server topology');
+  $self->{_proto} = $config->returnOrigValue('protocol');
+  $self->{_local_port} = $config->returnOrigValue('local-port');
+  $self->{_remote_port} = $config->returnOrigValue('remote-port');
+
   return 0;
 }
 
@@ -204,6 +218,10 @@ sub isDifferentFrom {
   return 1 if (pairListsDiff($this->{_client_ip}, $that->{_client_ip}));
   return 1 if (pairListsDiff($this->{_client_subnet},
                              $that->{_client_subnet}));
+  return 1 if ($this->{_topo} ne $that->{_topo});
+  return 1 if ($this->{_proto} ne $that->{_proto});
+  return 1 if ($this->{_local_port} ne $that->{_local_port});
+  return 1 if ($this->{_remote_port} ne $that->{_remote_port});
 
   return 0;
 }
@@ -218,22 +236,43 @@ sub get_command {
   # interface
   $cmd .= " --dev-type tun --dev $self->{_intf}";
 
+  my ($tcp_p, $tcp_a) = (0, 0);
+  if (defined($self->{_proto})) {
+    if ($self->{_proto} eq 'tcp-passive') {
+      $tcp_p = 1;
+    } elsif ($self->{_proto} eq 'tcp-active') {
+      $tcp_a = 1;
+    }
+  }
+
   # mode
-  my ($client, $server) = (0, 0);
+  my ($client, $server, $topo) = (0, 0, 'p2p');
   return (undef, 'Must specify "mode"') if (!defined($self->{_mode}));
   if ($self->{_mode} eq 'client') {
+    return (undef, 'Cannot specify "local-port" in client mode')
+      if (defined($self->{_local_port}));
+    return (undef, 'Protocol "tcp-passive" is not valid in client mode')
+      if ($tcp_p);
     $client = 1;
     $cmd .= ' --client --nobind';
   } elsif ($self->{_mode} eq 'server') {
+    return (undef, 'Protocol "tcp-active" is not valid in server mode')
+      if ($tcp_a);
     $server = 1;
     # note: "topology subnet" doesn't seem to provide client isolation.
     #       "topology p2p" is not compatible with Windows.
-    $cmd .= ' --mode server --tls-server --topology p2p';
+    if (defined($self->{_topo}) && $self->{_topo} eq 'subnet') {
+      $topo = $self->{_topo};
+    }
+    $cmd .= " --mode server --tls-server --topology $topo";
     $cmd .= " --keepalive $ping_itvl $ping_restart";
   } else {
     # site-to-site
     $cmd .= " --ping $ping_itvl --ping-restart $ping_restart";
   }
+    
+  return (undef, 'The "topology" option is only valid in server mode')
+    if (!$server && defined($self->{_topo}));
 
   # tunnel addresses (site-to-site only)
   if (!$client && !$server) {
@@ -252,6 +291,24 @@ sub get_command {
   if (defined($self->{_local_host})) {
     # we can check if the address is present
     $cmd .= " --local $self->{_local_host}";
+  }
+  
+  # local port
+  if (defined($self->{_local_port})) {
+    $cmd .= " --lport $self->{_local_port}";
+  }
+  
+  # remote port
+  if (defined($self->{_remote_port})) {
+    return (undef, 'Cannot specify "remote-port" in server mode') if ($server);
+    $cmd .= " --rport $self->{_remote_port}";
+  }
+
+  # protocol
+  if ($tcp_p) {
+    $cmd .= " --proto tcp-server";
+  } elsif ($tcp_a) {
+    $cmd .= " --proto tcp-client";
   }
 
   # remote host
@@ -351,6 +408,9 @@ sub get_command {
         return (undef, "Client IP \"$ip\" is not in $self->{_server_subnet}")
           if (!$cip->within($s));
         my $ip1 = $s->first()->addr();
+        if ($topo eq 'subnet') {
+          $ip1 = $m;
+        }
         # note: with "topology subnet", this is "<ip> <netmask>".
         #       with "topology p2p", this is "<ip> <our_ip>".
         system("echo \"ifconfig-push $ip $ip1\" >> $ccd_dir/$client");

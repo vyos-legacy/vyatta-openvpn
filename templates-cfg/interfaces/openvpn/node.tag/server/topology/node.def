@@ -1,0 +1,7 @@
+type: txt
+help: Set topology for clients
+syntax:expression: $VAR(@) in "point-to-point", "subnet";
+                   "Must be \"point-to-point\" or \"subnet\""
+comp_help: Possible completions:
+  point-to-point   Set topology to "point-to-point"
+  subnet           Set topology to "subnet"
