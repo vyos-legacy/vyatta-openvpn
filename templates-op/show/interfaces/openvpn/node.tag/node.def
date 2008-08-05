@@ -1,0 +1,5 @@
+help: Show specified OpenVPN interface information
+allowed: local -a array ;
+	 array=( /sys/class/net/vtun* ) ;
+	 echo  -n ${array[@]##*/}
+run: ${vyatta_bindir}/vyatta-show-interfaces.pl --intf="$4"

@@ -1,0 +1,2 @@
+help: Show captured traffic on specified OpenVPN interface
+run: /opt/vyatta/bin/vyatta-tshark-interface-port.pl "$4"
