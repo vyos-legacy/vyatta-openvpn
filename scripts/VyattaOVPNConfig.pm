@@ -29,12 +29,17 @@ my %fields = (
   _tls_cert      => undef,
   _tls_key       => undef,
   _tls_dh        => undef,
+  _tls_crl       => undef,
   _client_ip     => [],
   _client_subnet => [],
   _topo          => undef,
   _proto         => undef,
   _local_port    => undef,
   _remote_port   => undef,
+  _r_def_route   => undef,
+  _r_def_rt_loc  => undef,
+  _encrypt       => undef,
+  _hash          => undef,
   _is_empty         => 1,
 );
 
@@ -80,9 +85,11 @@ sub setup {
   $self->{_tls_cert} = $config->returnValue('tls cert-file');
   $self->{_tls_key} = $config->returnValue('tls key-file');
   $self->{_tls_dh} = $config->returnValue('tls dh-file');
+  $self->{_tls_crl} = $config->returnValue('tls crl-file');
   $self->{_tls_def} = (defined($self->{_tls_ca})
                        || defined($self->{_tls_cert})
                        || defined($self->{_tls_key})
+                       || defined($self->{_tls_crl})
                        || defined($self->{_tls_dh})) ? 1 : undef;
   my @clients = $config->listNodes('server client');
   # client IPs
@@ -108,6 +115,10 @@ sub setup {
   $self->{_proto} = $config->returnValue('protocol');
   $self->{_local_port} = $config->returnValue('local-port');
   $self->{_remote_port} = $config->returnValue('remote-port');
+  $self->{_r_def_route} = $config->exists('replace-default-route');
+  $self->{_r_def_rt_loc} = $config->exists('replace-default-route local');
+  $self->{_encrypt} = $config->returnValue('encryption');
+  $self->{_hash} = $config->returnValue('hash');
 
   return 0;
 }
@@ -141,9 +152,11 @@ sub setupOrig {
   $self->{_tls_cert} = $config->returnOrigValue('tls cert-file');
   $self->{_tls_key} = $config->returnOrigValue('tls key-file');
   $self->{_tls_dh} = $config->returnOrigValue('tls dh-file');
+  $self->{_tls_crl} = $config->returnOrigValue('tls crl-file');
   $self->{_tls_def} = (defined($self->{_tls_ca})
                        || defined($self->{_tls_cert})
                        || defined($self->{_tls_key})
+                       || defined($self->{_tls_crl})
                        || defined($self->{_tls_dh})) ? 1 : undef;
   my @clients = $config->listOrigNodes('server client');
   # client IPs
@@ -169,6 +182,10 @@ sub setupOrig {
   $self->{_proto} = $config->returnOrigValue('protocol');
   $self->{_local_port} = $config->returnOrigValue('local-port');
   $self->{_remote_port} = $config->returnOrigValue('remote-port');
+  $self->{_r_def_route} = $config->existsOrig('replace-default-route');
+  $self->{_r_def_rt_loc} = $config->existsOrig('replace-default-route local');
+  $self->{_encrypt} = $config->returnOrigValue('encryption');
+  $self->{_hash} = $config->returnOrigValue('hash');
 
   return 0;
 }
@@ -214,6 +231,7 @@ sub isDifferentFrom {
   return 1 if ($this->{_tls_cert} ne $that->{_tls_cert});
   return 1 if ($this->{_tls_key} ne $that->{_tls_key});
   return 1 if ($this->{_tls_dh} ne $that->{_tls_dh});
+  return 1 if ($this->{_tls_crl} ne $that->{_tls_crl});
   return 1 if ($this->{_tls_def} ne $that->{_tls_def});
   return 1 if (pairListsDiff($this->{_client_ip}, $that->{_client_ip}));
   return 1 if (pairListsDiff($this->{_client_subnet},
@@ -222,9 +240,30 @@ sub isDifferentFrom {
   return 1 if ($this->{_proto} ne $that->{_proto});
   return 1 if ($this->{_local_port} ne $that->{_local_port});
   return 1 if ($this->{_remote_port} ne $that->{_remote_port});
+  return 1 if ($this->{_r_def_route} ne $that->{_r_def_route});
+  return 1 if ($this->{_r_def_rt_loc} ne $that->{_r_def_rt_loc});
+  return 1 if ($this->{_encrypt} ne $that->{_encrypt});
+  return 1 if ($this->{_hash} ne $that->{_hash});
 
   return 0;
 }
+
+my %encryption_cmd_hash = (
+  'des' => ' --cipher des-cbc',
+  '3des' => ' --cipher des-ede3-cbc',
+  'bf128' => ' --cipher bf-cbc --keysize 128',
+  'bf256' => ' --cipher bf-cbc --keysize 256',
+  'aes128' => ' --cipher aes-128-cbc',
+  'aes192' => ' --cipher aes-192-cbc',
+  'aes256' => ' --cipher aes-256-cbc',
+);
+
+my %hash_cmd_hash = (
+  'md5' => ' --auth md5',
+  'sha1' => ' --auth sha1',
+  'sha256' => ' --auth sha256',
+  'sha512' => ' --auth sha512',
+);
 
 sub get_command {
   my ($self) = @_;
@@ -280,6 +319,18 @@ sub get_command {
       if (!defined($self->{_local_addr}));
     return (undef, 'Must specify "remote-address"')
       if (!defined($self->{_remote_addr}));
+   
+    if (defined($self->{_local_host})
+        && $self->{_local_addr} eq $self->{_local_host}) {
+      return (undef, '"local-address" cannot be the same as "local-host"');
+    }
+    if (scalar(@{$self->{_remote_host}}) > 0) {
+      for my $rem (@{$self->{_remote_host}}) {
+        return (undef, '"remote-address" cannot be the same as "remote-host"')
+          if ($rem eq $self->{_remote_addr});
+      }
+    }
+
     $cmd .= " --ifconfig $self->{_local_addr} $self->{_remote_addr}";
   } else {
     return (undef, 'Cannot specify "local-address" or "remote-address" in '
@@ -337,6 +388,20 @@ sub get_command {
     $cmd .= " --route $n $m";
   }
 
+  # encryption
+  if (defined($self->{_encrypt})) {
+    return (undef, "\"$self->{_encrypt}\" is not a valid algorithm")
+      if (!defined($encryption_cmd_hash{$self->{_encrypt}}));
+    $cmd .= $encryption_cmd_hash{$self->{_encrypt}};
+  }
+
+  # hash
+  if (defined($self->{_hash})) {
+    return (undef, "\"$self->{_hash}\" is not a valid algorithm")
+      if (!defined($hash_cmd_hash{$self->{_hash}}));
+    $cmd .= $hash_cmd_hash{$self->{_hash}};
+  }
+
   # secret & tls
   return (undef, 'Must specify one of "shared-secret-key-file" and "tls"')
     if (!defined($self->{_secret_file}) && !defined($self->{_tls_def}));
@@ -365,6 +430,12 @@ sub get_command {
     return (undef, "Specified key-file \"$self->{_tls_key}\" is not valid")
       if (! -r $self->{_tls_key});
     $cmd .= " --key $self->{_tls_key}";
+   
+    if (defined($self->{_tls_crl})) {
+      return (undef, "Specified crl-file \"$self->{_tls_crl}\" is not valid")
+        if (! -r $self->{_tls_crl});
+      $cmd .= " --crl-verify $self->{_tls_crl}";
+    }
 
     if (!defined($self->{_tls_dh})) {
       return (undef, 'Must specify "tls dh-file" in server mode')
@@ -389,6 +460,14 @@ sub get_command {
 
   # "server" subsection
   if ($server) {
+    if (defined($self->{_r_def_route})) {
+      if (defined($self->{_r_def_rt_loc})) {
+        $cmd .= ' --push "redirect-gateway local" ';
+      } else {
+        $cmd .= ' --push "redirect-gateway" ';
+      }
+    }
+
     return (undef, 'Must specify "server" options in server mode')
       if (!defined($self->{_server_def}));
     my $s = new NetAddr::IP "$self->{_server_subnet}";
@@ -426,7 +505,19 @@ sub get_command {
         return (undef, 'Cannot generate per-client configurations')
           if ($? >> 8);
       }
-      $cmd .= " --client-config-dir $ccd_dir";
+    }
+    $cmd .= " --client-config-dir $ccd_dir";
+  } else {
+    if (defined($self->{_r_def_route})) {
+      return (undef,
+              'Cannot set "replace-default-route" without "remote-host"')
+        if (scalar(@{$self->{_remote_host}}) <= 0);
+
+      if (defined($self->{_r_def_rt_loc})) {
+        $cmd .= ' --redirect-gateway local ';
+      } else {
+        $cmd .= ' --redirect-gateway ';
+      }
     }
   }
 
