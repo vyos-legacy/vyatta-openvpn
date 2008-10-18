@@ -368,7 +368,7 @@ sub get_command {
     return (undef, 'Cannot specify "remote-host" in server mode') if ($server);
 
     for my $rhost (@{$self->{_remote_host}}) {
-      if (!VyattaTypeChecker::validateType('ipv4', $rhost)) {
+      if (!VyattaTypeChecker::validateType('ipv4', $rhost, 1)) {
         if (!($rhost =~ /^[-a-zA-Z0-9.]+$/)) {
           return (undef, 'Must specify IP or hostname for "remote-host"');
         }
