@@ -285,11 +285,13 @@ sub get_command {
   }
 
   # mode
-  my ($client, $server, $topo) = (0, 0, 'p2p');
+  my ($client, $server, $topo) = (0, 0, 'subnet');
   return (undef, 'Must specify "mode"') if (!defined($self->{_mode}));
   if ($self->{_mode} eq 'client') {
     return (undef, 'Cannot specify "local-port" in client mode')
       if (defined($self->{_local_port}));
+    return (undef, 'Cannot specify "local-host" in client mode')
+      if (defined($self->{_local_host}));
     return (undef, 'Protocol "tcp-passive" is not valid in client mode')
       if ($tcp_p);
     $client = 1;
@@ -300,8 +302,8 @@ sub get_command {
     $server = 1;
     # note: "topology subnet" doesn't seem to provide client isolation.
     #       "topology p2p" is not compatible with Windows.
-    if (defined($self->{_topo}) && $self->{_topo} eq 'subnet') {
-      $topo = $self->{_topo};
+    if (defined($self->{_topo}) && $self->{_topo} eq 'point-to-point') {
+      $topo = 'p2p';
     }
     $cmd .= " --mode server --tls-server --topology $topo";
     $cmd .= " --keepalive $ping_itvl $ping_restart";
@@ -340,12 +342,16 @@ sub get_command {
 
   # local host
   if (defined($self->{_local_host})) {
+    return (undef, 'Cannot specify "local-host" with "tcp-active"')
+      if ($tcp_a);
     # we can check if the address is present
     $cmd .= " --local $self->{_local_host}";
   }
   
   # local port
   if (defined($self->{_local_port})) {
+    return (undef, 'Cannot specify "local-port" with "tcp-active"')
+      if ($tcp_a);
     $cmd .= " --lport $self->{_local_port}";
   }
   
@@ -377,6 +383,8 @@ sub get_command {
     }
   } elsif ($client) {
     return (undef, 'Must specify "remote-host" in client mode');
+  } elsif ($tcp_a) {
+    return (undef, 'Must specify "remote-host" with "tcp-active"');
   }
   # site-to-site: if remote host not defined, no "--remote" (same as "--float")
 
@@ -468,7 +476,7 @@ sub get_command {
       }
     }
 
-    return (undef, 'Must specify "server" options in server mode')
+    return (undef, 'Must specify "server subnet" option in server mode')
       if (!defined($self->{_server_def}));
     my $s = new NetAddr::IP "$self->{_server_subnet}";
     my $n = $s->addr();
