@@ -61,6 +61,8 @@ sub setup {
   my ($self, $intf) = @_;
   my $config = new VyattaConfig;
 
+  # set up ccd for this interface
+  $ccd_dir = "$ccd_dir/$intf";
   $config->setLevel("$iftype $intf");
   my @nodes = $config->listNodes();
   if (scalar(@nodes) <= 0) {
@@ -520,9 +522,9 @@ sub get_command {
     $cmd .= " --server $n $m";
 
     # per-client config specified. write them out.
+    system("mkdir -p $ccd_dir ; rm -f $ccd_dir/*");
     if (scalar(@{$self->{_client_ip}}) > 0
         || scalar(@{$self->{_client_subnet}}) > 0) {
-      system("rm -f $ccd_dir/*");
       return (undef, 'Cannot generate per-client configurations') if ($? >> 8);
       for my $ref (@{$self->{_client_ip}}) {
         my $client = ${$ref}[0];
