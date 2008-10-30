@@ -30,6 +30,7 @@ my %fields = (
   _tls_key       => undef,
   _tls_dh        => undef,
   _tls_crl       => undef,
+  _tls_role      => undef,
   _client_ip     => [],
   _client_subnet => [],
   _topo          => undef,
@@ -86,10 +87,12 @@ sub setup {
   $self->{_tls_key} = $config->returnValue('tls key-file');
   $self->{_tls_dh} = $config->returnValue('tls dh-file');
   $self->{_tls_crl} = $config->returnValue('tls crl-file');
+  $self->{_tls_role} = $config->returnValue('tls role');
   $self->{_tls_def} = (defined($self->{_tls_ca})
                        || defined($self->{_tls_cert})
                        || defined($self->{_tls_key})
                        || defined($self->{_tls_crl})
+                       || defined($self->{_tls_role})
                        || defined($self->{_tls_dh})) ? 1 : undef;
   my @clients = $config->listNodes('server client');
   # client IPs
@@ -153,10 +156,12 @@ sub setupOrig {
   $self->{_tls_key} = $config->returnOrigValue('tls key-file');
   $self->{_tls_dh} = $config->returnOrigValue('tls dh-file');
   $self->{_tls_crl} = $config->returnOrigValue('tls crl-file');
+  $self->{_tls_role} = $config->returnOrigValue('tls role');
   $self->{_tls_def} = (defined($self->{_tls_ca})
                        || defined($self->{_tls_cert})
                        || defined($self->{_tls_key})
                        || defined($self->{_tls_crl})
+                       || defined($self->{_tls_role})
                        || defined($self->{_tls_dh})) ? 1 : undef;
   my @clients = $config->listOrigNodes('server client');
   # client IPs
@@ -232,6 +237,7 @@ sub isDifferentFrom {
   return 1 if ($this->{_tls_key} ne $that->{_tls_key});
   return 1 if ($this->{_tls_dh} ne $that->{_tls_dh});
   return 1 if ($this->{_tls_crl} ne $that->{_tls_crl});
+  return 1 if ($this->{_tls_role} ne $that->{_tls_role});
   return 1 if ($this->{_tls_def} ne $that->{_tls_def});
   return 1 if (pairListsDiff($this->{_client_ip}, $that->{_client_ip}));
   return 1 if (pairListsDiff($this->{_client_subnet},
@@ -372,6 +378,9 @@ sub get_command {
   if (scalar(@{$self->{_remote_host}}) > 0) {
     # not allowed in server mode
     return (undef, 'Cannot specify "remote-host" in server mode') if ($server);
+    return (undef,
+            'Cannot specify more than 1 "remote-host" with "tcp-passive"')
+      if ($tcp_p && (scalar(@{$self->{_remote_host}}) > 1));
 
     for my $rhost (@{$self->{_remote_host}}) {
       if (!VyattaTypeChecker::validateType('ipv4', $rhost, 1)) {
@@ -454,6 +463,33 @@ sub get_command {
       return (undef, "Specified dh-file \"$self->{_tls_dh}\" is not valid")
         if (! -r $self->{_tls_dh});
       $cmd .= " --dh $self->{_tls_dh}";
+    }
+    
+    if (defined($self->{_tls_role})) {
+      # have role
+      return (undef, 'Cannot specify "tls role" in client-server mode')
+        if ($client || $server);
+      if ($self->{_tls_role} eq 'active') {
+        return (undef, 
+                'Cannot specify "tcp-passive" when "tls role" is "active"')
+          if ($tcp_p);
+        return (undef,
+                'Cannot specify "tls dh-file" when "tls role" is "active"')
+          if (defined($self->{_tls_dh}));
+        $cmd .= ' --tls-client';
+      } elsif ($self->{_tls_role} eq 'passive') {
+        return (undef, 
+                'Cannot specify "tcp-active" when "tls role" is "passive"')
+          if ($tcp_a);
+        return (undef,
+                'Must specify "tls dh-file" when "tls role" is "passive"')
+          if (!defined($self->{_tls_dh}));
+        $cmd .= ' --tls-server';
+      }
+    } else {
+      # no role
+      return (undef, 'Must specify "tls role" in site-to-site mode')
+        if (!$client && !$server);
     }
   }
 

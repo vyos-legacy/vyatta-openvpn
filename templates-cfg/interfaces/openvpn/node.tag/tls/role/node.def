@@ -1,0 +1,7 @@
+type: txt
+help: Set role in TLS negotiation
+syntax:expression: $VAR(@) in "active", "passive";
+                   "Must be \"active\" or \"passive\""
+comp_help: Possible completions:
+  active           Initiate TLS negotiation actively
+  passive          Waiting for TLS connections passively
