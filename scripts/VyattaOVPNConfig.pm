@@ -523,9 +523,9 @@ sub get_command {
 
     # per-client config specified. write them out.
     system("mkdir -p $ccd_dir ; rm -f $ccd_dir/*");
+    return (undef, 'Cannot generate per-client configurations') if ($? >> 8);
     if (scalar(@{$self->{_client_ip}}) > 0
         || scalar(@{$self->{_client_subnet}}) > 0) {
-      return (undef, 'Cannot generate per-client configurations') if ($? >> 8);
       for my $ref (@{$self->{_client_ip}}) {
         my $client = ${$ref}[0];
         my $ip = ${$ref}[1];
