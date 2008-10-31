@@ -497,9 +497,12 @@ sub get_command {
 
   # secret file
   if (defined($self->{_secret_file})) {
-    return (undef, 'Specified shared-secret-key-file '
-                   . "\"$self->{_secret_file}\" is not valid")
-      if (! -r $self->{_secret_file});
+    my $err = "Specified shared-secret-key-file \"$self->{_secret_file}\" "
+              . 'is not valid';
+    return (undef, $err) if (! -r $self->{_secret_file}
+                             || !open(SF, "<$self->{_secret_file}"));
+    my @hdrs = grep { /^-----BEGIN OpenVPN Static key V1-----$/ } <SF>;
+    return (undef, $err) if (scalar(@hdrs) != 1);
     # we can further validate the secret file
     $cmd .= " --secret $self->{_secret_file}";
   }
