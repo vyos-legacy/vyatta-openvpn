@@ -348,13 +348,27 @@ sub get_command {
       if (defined($self->{_local_addr}) || defined($self->{_remote_addr}));
   }
 
-  # local host
-  if (defined($self->{_local_host})) {
-    return (undef, 'Cannot specify "local-host" with "tcp-active"')
-      if ($tcp_a);
-    # we can check if the address is present
-    $cmd .= " --local $self->{_local_host}";
-  }
+   # local host
+   if (defined($self->{_local_host})) {
+    # check if this IP is present on any of the interfaces on system
+    use VyattaMisc;
+    my @interface_ips = VyattaMisc::getInterfacesIPadresses("all");
+    my $is_there = 0;
+    foreach my $elt (@interface_ips) {
+     # prune elt to make it an IP address without mask
+     my @just_ip = split('/', $elt);
+     if ($self->{_local_host} eq $just_ip[0]) {
+      $is_there = 1;
+      last;
+     }
+    }
+    if ($is_there == 1) {
+     $cmd .= " --local $self->{_local_host}";
+    } else {
+     return (undef,
+"No interface on system with specified local-host IP address $self->{_local_host}");
+    }
+   }
   
   # local port
   if (defined($self->{_local_port})) {
