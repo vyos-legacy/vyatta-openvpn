@@ -18,7 +18,6 @@ my %fields = (
   _local_host    => undef,
   _remote_addr   => undef,
   _remote_host   => [],
-  _remote_subnet => undef,
   _options       => undef,
   _secret_file   => undef,
   _mode          => undef,
@@ -78,7 +77,6 @@ sub setup {
   $self->{_remote_addr} = $config->returnValue('remote-address');
   my @tmp = $config->returnValues('remote-host');
   $self->{_remote_host} = \@tmp;
-  $self->{_remote_subnet} = $config->returnValue('remote-subnet');
   $self->{_options} = $config->returnValue('openvpn-option');
   $self->{_secret_file} = $config->returnValue('shared-secret-key-file');
   $self->{_mode} = $config->returnValue('mode');
@@ -147,7 +145,6 @@ sub setupOrig {
   $self->{_remote_addr} = $config->returnOrigValue('remote-address');
   my @tmp = $config->returnOrigValues('remote-host');
   $self->{_remote_host} = \@tmp;
-  $self->{_remote_subnet} = $config->returnOrigValue('remote-subnet');
   $self->{_options} = $config->returnOrigValue('openvpn-option');
   $self->{_secret_file} = $config->returnOrigValue('shared-secret-key-file');
   $self->{_mode} = $config->returnOrigValue('mode');
@@ -228,7 +225,6 @@ sub isDifferentFrom {
   return 1 if ($this->{_local_host} ne $that->{_local_host});
   return 1 if ($this->{_remote_addr} ne $that->{_remote_addr});
   return 1 if (listsDiff($this->{_remote_host}, $that->{_remote_host}));
-  return 1 if ($this->{_remote_subnet} ne $that->{_remote_subnet});
   return 1 if ($this->{_options} ne $that->{_options});
   return 1 if ($this->{_secret_file} ne $that->{_secret_file});
   return 1 if ($this->{_mode} ne $that->{_mode});
@@ -413,14 +409,6 @@ sub get_command {
   }
   # site-to-site: if remote host not defined, no "--remote" (same as "--float")
 
-  # remote subnet
-  if (defined($self->{_remote_subnet})) {
-    my $s = new NetAddr::IP "$self->{_remote_subnet}";
-    my $n = $s->addr();
-    my $m = $s->mask();
-    $cmd .= " --route $n $m";
-  }
-
   # encryption
   if (defined($self->{_encrypt})) {
     return (undef, "\"$self->{_encrypt}\" is not a valid algorithm")
@@ -599,7 +587,6 @@ sub print_str {
   $str .= "\n  local_host " . $self->{_local_host};
   $str .= "\n  remote_addr " . $self->{_remote_addr};
   $str .= "\n  remote_host " . (join ' ', @{$self->{_remote_host}});
-  $str .= "\n  remote_subnet " . $self->{_remote_subnet};
   $str .= "\n  options " . $self->{_options};
   $str .= "\n  secret_file " . $self->{_secret_file};
   $str .= "\n  mode " . $self->{_mode};
