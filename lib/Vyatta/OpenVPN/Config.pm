@@ -1,7 +1,9 @@
-package VyattaOVPNConfig;
+package Vyatta::OpenVPN::Config;
 
 use strict;
-use lib "/opt/vyatta/share/perl5/";
+use warnings;
+
+use lib "/opt/vyatta/share/perl5";
 use VyattaConfig;
 use VyattaTypeChecker;
 use NetAddr::IP;

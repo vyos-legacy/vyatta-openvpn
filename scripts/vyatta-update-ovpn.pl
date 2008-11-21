@@ -2,12 +2,12 @@
 
 use strict;
 use lib "/opt/vyatta/share/perl5";
-use VyattaOVPNConfig;
+require Vyatta::OpenVPN::Config;
 
 my $vtun = shift;
 
-my $config = new VyattaOVPNConfig;
-my $oconfig = new VyattaOVPNConfig;
+my $config = new Vyatta::OpenVPN::Config;
+my $oconfig = new Vyatta::OpenVPN::Config;
 $config->setup($vtun);
 $oconfig->setupOrig($vtun);
 
