@@ -4,8 +4,8 @@ use strict;
 use warnings;
 
 use lib "/opt/vyatta/share/perl5";
-use VyattaConfig;
-use VyattaTypeChecker;
+use Vyatta::Config;
+use Vyatta::TypeChecker;
 use NetAddr::IP;
 
 my $ccd_dir = '/opt/vyatta/etc/openvpn/ccd';
@@ -60,7 +60,7 @@ sub new {
 
 sub setup {
   my ($self, $intf) = @_;
-  my $config = new VyattaConfig;
+  my $config = new Vyatta::Config;
 
   # set up ccd for this interface
   $ccd_dir = "$ccd_dir/$intf";
@@ -130,7 +130,7 @@ sub setup {
 
 sub setupOrig {
   my ($self, $intf) = @_;
-  my $config = new VyattaConfig;
+  my $config = new Vyatta::Config;
 
   $config->setLevel("$iftype $intf");
   my @nodes = $config->listOrigNodes();
@@ -349,8 +349,8 @@ sub get_command {
    # local host
    if (defined($self->{_local_host})) {
     # check if this IP is present on any of the interfaces on system
-    use VyattaMisc;
-    my @interface_ips = VyattaMisc::getInterfacesIPadresses("all");
+    use Vyatta::Misc;
+    my @interface_ips = Vyatta::Misc::getInterfacesIPadresses("all");
     my $is_there = 0;
     foreach my $elt (@interface_ips) {
      # prune elt to make it an IP address without mask
@@ -397,7 +397,7 @@ sub get_command {
       if ($tcp_p && (scalar(@{$self->{_remote_host}}) > 1));
 
     for my $rhost (@{$self->{_remote_host}}) {
-      if (!VyattaTypeChecker::validateType('ipv4', $rhost, 1)) {
+      if (!Vyatta::TypeChecker::validateType('ipv4', $rhost, 1)) {
         if (!($rhost =~ /^[-a-zA-Z0-9.]+$/)) {
           return (undef, 'Must specify IP or hostname for "remote-host"');
         }
