@@ -222,6 +222,9 @@ sub pairListsDiff {
 sub isDifferentFrom {
   my ($this, $that) = @_;
 
+  # suppress uninitialized warnings here
+  no warnings qw(uninitialized);
+
   return 1 if ($this->{_is_empty} ne $that->{_is_empty});
   return 1 if ($this->{_local_addr} ne $that->{_local_addr});
   return 1 if ($this->{_local_host} ne $that->{_local_host});
