@@ -1,3 +1,19 @@
+vyatta-openvpn (0.2.1) unstable; urgency=low
+
+  [ An-Cheng Huang ]
+  * add support for development build
+
+  [ Stephen Hemminger ]
+  * Change from VyattaOVPNConfig to Vyatta::OpenVPN::Config
+  * Convert to Vyatta::
+
+  [ An-Cheng Huang ]
+  * suppress warning messages
+  * update maintainer information
+  * "files" file should be removed before package build
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Thu, 08 Jan 2009 09:43:20 -0800
+
 vyatta-openvpn (0.2) unstable; urgency=low
 
 	  3.2.0
