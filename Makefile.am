@@ -4,6 +4,8 @@ share_perl5dir	 = $(datarootdir)/perl5/Vyatta/OpenVPN
 bin_sudo_usersdir = $(bindir)/sudo-users
 
 sbin_SCRIPTS = scripts/vyatta-update-ovpn.pl
+sbin_SCRIPTS += scripts/vyatta-qos-up
+
 share_perl5_DATA = lib/Vyatta/OpenVPN/Config.pm
 bin_sudo_users_SCRIPTS = scripts/vyatta-show-ovpn.pl
 
