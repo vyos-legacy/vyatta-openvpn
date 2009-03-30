@@ -42,7 +42,8 @@ my %fields = (
   _r_def_rt_loc  => undef,
   _encrypt       => undef,
   _hash          => undef,
-  _is_empty         => 1,
+  _is_empty      => 1,
+  _qos		 => undef,
 );
 
 my $iftype = 'interfaces openvpn';
@@ -124,6 +125,7 @@ sub setup {
   $self->{_r_def_rt_loc} = $config->exists('replace-default-route local');
   $self->{_encrypt} = $config->returnValue('encryption');
   $self->{_hash} = $config->returnValue('hash');
+  $self->{_qos} = $config->exists('qos-policy');
 
   return 0;
 }
@@ -192,6 +194,7 @@ sub setupOrig {
   $self->{_r_def_rt_loc} = $config->existsOrig('replace-default-route local');
   $self->{_encrypt} = $config->returnOrigValue('encryption');
   $self->{_hash} = $config->returnOrigValue('hash');
+  $self->{_qos} = $config->returnValue('qos-policy');
 
   return 0;
 }
@@ -253,6 +256,7 @@ sub isDifferentFrom {
   return 1 if ($this->{_r_def_rt_loc} ne $that->{_r_def_rt_loc});
   return 1 if ($this->{_encrypt} ne $that->{_encrypt});
   return 1 if ($this->{_hash} ne $that->{_hash});
+  return 1 if ($this->{_qos} ne $this->{_qos});
 
   return 0;
 }
@@ -413,6 +417,9 @@ sub get_command {
     return (undef, 'Must specify "remote-host" with "tcp-active"');
   }
   # site-to-site: if remote host not defined, no "--remote" (same as "--float")
+
+  # qos
+  $cmd .= " --up /opt/vyatta/sbin/vyatta-qos-up" if ($self->{_qos});
 
   # encryption
   if (defined($self->{_encrypt})) {
