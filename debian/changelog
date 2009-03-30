@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.3) unstable; urgency=low
+
+  * Add Qos support to openVPN
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 30 Mar 2009 15:01:47 -0700
+
 vyatta-openvpn (0.2.2) unstable; urgency=low
 
   * Remove per-interface firewall templates.  They are auto-generated
