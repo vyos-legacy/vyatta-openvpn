@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.5) unstable; urgency=low
+
+  * pushed priority to node.def
+
+ -- slioch <slioch@eng-140.vyatta.com>  Tue, 20 Oct 2009 16:15:09 -0700
+
 vyatta-openvpn (0.2.4) unstable; urgency=low
 
   * UNRELEASED
