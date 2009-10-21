@@ -1,5 +1,5 @@
-priority: 380
 tag:
+priority: 380
 type: txt
 help: Configure OpenVPN tunnel interface
 syntax:expression: pattern $VAR(@) "^vtun[0-9]+$"
