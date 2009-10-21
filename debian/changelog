@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.6) unstable; urgency=low
+
+  * move priority after tag nodes.
+
+ -- slioch <slioch@eng-140.vyatta.com>  Wed, 21 Oct 2009 09:15:48 -0700
+
 vyatta-openvpn (0.2.5) unstable; urgency=low
 
   * pushed priority to node.def
