@@ -618,10 +618,11 @@ sub isEmpty {
   return $self->{_is_empty};
 }
 
+#STATIC function
 sub wait_until_dead {
-  my ($self,$kill_repeatedly) = @_;
+  my ($intf,$kill_repeatedly) = @_;
   my ($i, $done) = (0, 0);
-  my $PGREP = "pgrep -f '^/usr/sbin/openvpn .* --dev " . $self->{_intf} . " --'";
+  my $PGREP = "pgrep -f '^/usr/sbin/openvpn .* --dev " . $intf . " --'";
   
   while ($i < 10) {
     if ($kill_repeatedly) {
@@ -639,9 +640,10 @@ sub wait_until_dead {
   return 0; # alive
 }
 
+#STATIC function
 sub kill_daemon {
-    my ($self) = @_;
-    my $PGREP = "pgrep -f '^/usr/sbin/openvpn .* --dev " . $self->{_intf} . " --'";
+    my ($intf) = @_;
+    my $PGREP = "pgrep -f '^/usr/sbin/openvpn .* --dev " . $intf . " --'";
     
     system("$PGREP >&/dev/null");
     if ($? >> 8) {
@@ -655,11 +657,11 @@ sub kill_daemon {
 	print STDERR "OpenVPN configuration error: Failed to stop tunnel.\n";
 	exit 1;
     }
-    return if (wait_until_dead($self,0));
+    return if (wait_until_dead($intf,0));
     
     # still alive. kill forcefully.
     system("kill -9 `$PGREP` >&/dev/null");
-    if (!wait_until_dead(1)) {
+    if (!wait_until_dead($intf,1)) {
 	# undead
 	print STDERR "OpenVPN configuration error: Failed to stop tunnel.\n";
 	exit 1;

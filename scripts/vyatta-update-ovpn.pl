@@ -18,13 +18,13 @@ if (!($config->isDifferentFrom($oconfig))) {
 
 if ($config->isEmpty()) {
   # deleted
-  $config->kill_daemon();
+  $config->kill_daemon($vtun);
   exit 0;
 }
 
 my ($cmd, $err) = $config->get_command();
 if (defined($cmd)) {
-  $config->kill_daemon();
+  $config->kill_daemon($vtun);
   system("$cmd");
   if ($? >> 8) {
     $err = 'Failed to start OpenVPN tunnel';
