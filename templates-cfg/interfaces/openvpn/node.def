@@ -4,4 +4,13 @@ type: txt
 help: Configure OpenVPN tunnel interface
 syntax:expression: pattern $VAR(@) "^vtun[0-9]+$"
         ; "OpenVPN tunnel interface must be named \"vtun<num>\""
-end: sudo /opt/vyatta/sbin/vyatta-update-ovpn.pl "$VAR(@)"
+
+end: 
+     result=1;
+     if [ -x /opt/vyatta/sbin/vyatta-update-ovpn-aux.pl ]; then
+          result = sudo /opt/vyatta/sbin/vyatta-update-ovpn-aux.pl "$VAR(@)";
+     fi
+     if [ $result = 1 ]; then
+          sudo /opt/vyatta/sbin/vyatta-update-ovpn.pl "$VAR(@)"  
+     fi;
+
