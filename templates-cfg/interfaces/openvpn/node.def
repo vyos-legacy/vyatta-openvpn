@@ -8,7 +8,8 @@ syntax:expression: pattern $VAR(@) "^vtun[0-9]+$"
 end: 
      result=1;
      if [ -x /opt/vyatta/sbin/vyatta-update-ovpn-aux.pl ]; then
-          result = sudo /opt/vyatta/sbin/vyatta-update-ovpn-aux.pl "$VAR(@)";
+          sudo /opt/vyatta/sbin/vyatta-update-ovpn-aux.pl "$VAR(@)";
+	  result=$?
      fi
      if [ $result = 1 ]; then
           sudo /opt/vyatta/sbin/vyatta-update-ovpn.pl "$VAR(@)"  
