@@ -1,3 +1,18 @@
+vyatta-openvpn (0.2.7) unstable; urgency=low
+
+  [ slioch ]
+  * move common process management to module from script
+  * just pass in tunnel value into process control functions and not
+    self ptr
+  * clean up calling argument for static funcs
+  * modified delegation of aux behavior in openvpn transaction.
+  * fix assignment of return code
+
+  [ Michael Larson ]
+  * dependency update
+
+ -- Michael Larson <slioch@slioch.vyatta.com>  Fri, 13 Nov 2009 13:58:03 -0800
+
 vyatta-openvpn (0.2.6) unstable; urgency=low
 
   * move priority after tag nodes.
