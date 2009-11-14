@@ -1,2 +1,5 @@
 help: Show OpenVPN interface information
 run: ${vyatta_bindir}/vyatta-show-interfaces.pl --intf-type=openvpn --action=show-brief
+if [ -x ${vyatta_bindir}/vyatta-show-interfaces-aux.pl ]; then
+   ${vyatta_bindir}/vyatta-show-interfaces-aux.pl
+fi;
