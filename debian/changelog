@@ -1,3 +1,12 @@
+vyatta-openvpn (0.2.8) unstable; urgency=low
+
+  * add aux show command for interface status
+  * schedule openvpn tunnel after system and static routes are
+    configured. simple test with interface static route dependency on
+    openvpn tunnel worked with this change.
+
+ -- Michael Larson <slioch@slioch.vyatta.com>  Mon, 11 Jan 2010 11:09:39 -0800
+
 vyatta-openvpn (0.2.7) unstable; urgency=low
 
   [ slioch ]
