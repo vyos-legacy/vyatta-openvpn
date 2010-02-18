@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.8+kenwood1) unstable; urgency=low
+
+  * UNRELEASED
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Wed, 17 Feb 2010 16:09:09 -0800
+
 vyatta-openvpn (0.2.8) unstable; urgency=low
 
   * add aux show command for interface status
