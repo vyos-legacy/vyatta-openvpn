@@ -47,6 +47,7 @@ my %fields = (
   _bridge	 => undef,
   _bridgecost    => undef,
   _bridgeprio    => undef,
+  _disable	 => undef,
 );
 
 my $iftype = 'interfaces openvpn';
@@ -103,6 +104,7 @@ sub setup {
   $self->{_bridge} = $config->returnValue('bridge-group bridge');
   $self->{_bridgecost} = $config->returnValue('bridge-group cost');
   $self->{_bridgeprio} = $config->returnValue('bridge-group priority');
+  if ( $config->exists('disable') ) { $self->{_disable} = 1; }
 
   my @clients = $config->listNodes('server client');
   # client IPs
@@ -176,6 +178,7 @@ sub setupOrig {
   $self->{_bridge} = $config->returnOrigValue('bridge-group bridge');
   $self->{_bridgecost} = $config->returnOrigValue('bridge-group cost');
   $self->{_bridgeprio} = $config->returnOrigValue('bridge-group priority');
+  if ( $config->existsOrig('disable') ) { $self->{_disable} = 1; }
 
   my @clients = $config->listOrigNodes('server client');
   # client IPs
@@ -271,6 +274,7 @@ sub isDifferentFrom {
   return 1 if ($this->{_bridge} ne $that->{_bridge});
   return 1 if ($this->{_bridgecost} ne $that->{_bridgecost});
   return 1 if ($this->{_bridgeprio} ne $that->{_bridgeprio});
+  return 1 if ($this->{_disable} ne $that->{_disable});
 
   return 0;
 }
@@ -295,6 +299,8 @@ my %hash_cmd_hash = (
 sub get_command {
   my ($self) = @_;
   my $cmd = '/usr/sbin/openvpn --daemon --verb 3';
+ 
+  if ( $self->{_disable} ) { return ('disable', undef); }
 
   # status
   $cmd .= " --status $status_dir/$self->{_intf}.status $status_itvl";

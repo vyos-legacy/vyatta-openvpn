@@ -30,9 +30,12 @@ if (defined($cmd)) {
   $oconfig->removeBridge();
   $config->setupBridge();
   $config->configureBridge();
-  system("$cmd");
-  if ($? >> 8) {
-    $err = 'Failed to start OpenVPN tunnel';
+  print "DEBUG: $cmd\n";
+  if ("$cmd" ne 'disable') { 
+     system("$cmd");
+     if ($? >> 8) {
+       $err = 'Failed to start OpenVPN tunnel';
+     }
   }
 }
 if (defined($err)) {
