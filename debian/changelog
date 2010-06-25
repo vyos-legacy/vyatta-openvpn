@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.11) unstable; urgency=low
+
+  * fix for bug 3584
+
+ -- Robert Bays <rbays@roatan>  Fri, 25 Jun 2010 13:37:57 -0700
+
 vyatta-openvpn (0.2.10) unstable; urgency=low
 
   * enable L2 bridging in OpenVPN
