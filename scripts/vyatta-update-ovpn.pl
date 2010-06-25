@@ -19,12 +19,17 @@ if (!($config->isDifferentFrom($oconfig))) {
 if ($config->isEmpty()) {
   # deleted
   Vyatta::OpenVPN::Config::kill_daemon($vtun);
+  $oconfig->removeBridge();
   exit 0;
 }
 
 my ($cmd, $err) = $config->get_command();
+
 if (defined($cmd)) {
   Vyatta::OpenVPN::Config::kill_daemon($vtun);
+  $oconfig->removeBridge();
+  $config->setupBridge();
+  $config->configureBridge();
   system("$cmd");
   if ($? >> 8) {
     $err = 'Failed to start OpenVPN tunnel';

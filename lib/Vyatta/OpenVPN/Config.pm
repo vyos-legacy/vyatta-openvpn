@@ -44,6 +44,9 @@ my %fields = (
   _hash          => undef,
   _is_empty      => 1,
   _qos		 => undef,
+  _bridge	 => undef,
+  _bridgecost    => undef,
+  _bridgeprio    => undef,
 );
 
 my $iftype = 'interfaces openvpn';
@@ -97,6 +100,10 @@ sub setup {
                        || defined($self->{_tls_crl})
                        || defined($self->{_tls_role})
                        || defined($self->{_tls_dh})) ? 1 : undef;
+  $self->{_bridge} = $config->returnValue('bridge-group bridge');
+  $self->{_bridgecost} = $config->returnValue('bridge-group cost');
+  $self->{_bridgeprio} = $config->returnValue('bridge-group priority');
+
   my @clients = $config->listNodes('server client');
   # client IPs
   my @cips = ();
@@ -166,6 +173,10 @@ sub setupOrig {
                        || defined($self->{_tls_crl})
                        || defined($self->{_tls_role})
                        || defined($self->{_tls_dh})) ? 1 : undef;
+  $self->{_bridge} = $config->returnOrigValue('bridge-group bridge');
+  $self->{_bridgecost} = $config->returnOrigValue('bridge-group cost');
+  $self->{_bridgeprio} = $config->returnOrigValue('bridge-group priority');
+
   my @clients = $config->listOrigNodes('server client');
   # client IPs
   my @cips = ();
@@ -256,7 +267,10 @@ sub isDifferentFrom {
   return 1 if ($this->{_r_def_rt_loc} ne $that->{_r_def_rt_loc});
   return 1 if ($this->{_encrypt} ne $that->{_encrypt});
   return 1 if ($this->{_hash} ne $that->{_hash});
-  return 1 if ($this->{_qos} ne $this->{_qos});
+  return 1 if ($this->{_qos} ne $that->{_qos});
+  return 1 if ($this->{_bridge} ne $that->{_bridge});
+  return 1 if ($this->{_bridgecost} ne $that->{_bridgecost});
+  return 1 if ($this->{_bridgeprio} ne $that->{_bridgeprio});
 
   return 0;
 }
@@ -286,7 +300,10 @@ sub get_command {
   $cmd .= " --status $status_dir/$self->{_intf}.status $status_itvl";
  
   # interface
-  $cmd .= " --dev-type tun --dev $self->{_intf}";
+  my $type = 'tun';
+  if ( $self->{_bridge} ) { $type = 'tap'; }
+  else { $type = 'tun'; }
+  $cmd .= " --dev-type $type --dev $self->{_intf}";
 
   my ($tcp_p, $tcp_a) = (0, 0);
   if (defined($self->{_proto})) {
@@ -329,7 +346,7 @@ sub get_command {
     if (!$server && defined($self->{_topo}));
 
   # tunnel addresses (site-to-site only)
-  if (!$client && !$server) {
+  if (!$client && !$server && !$self->{_bridge}) {
     return (undef, 'Must specify "local-address"')
       if (!defined($self->{_local_addr}));
     return (undef, 'Must specify "remote-address"')
@@ -349,7 +366,7 @@ sub get_command {
     $cmd .= " --ifconfig $self->{_local_addr} $self->{_remote_addr}";
   } else {
     return (undef, 'Cannot specify "local-address" or "remote-address" in '
-                   . 'client-server mode')
+                   . 'client-server or bridge mode')
       if (defined($self->{_local_addr}) || defined($self->{_remote_addr}));
   }
 
@@ -668,7 +685,55 @@ sub kill_daemon {
     }
 }
 
+sub removeBridge {
+    my ($self) = @_;
+    if ( $self->{_bridge} ) {
+      my $tap = `ip link show $self->{_intf}`;
 
+      if ($tap =~ /ether/ ) {
+         my $cmd = "sudo brctl delif $self->{_bridge} $self->{_intf}";
+         system($cmd) == 0
+            or print "Error removing $self->{_intf} from bridge $self->{_bridge}\n";
+         $cmd = "sudo /usr/sbin/openvpn --rmtun --dev-type tap --dev $self->{_intf} > /dev/null";
+         system($cmd) == 0
+            or die "Error deleting tap interface $self->{_intf}\n";
+      }
+   }
+}
+
+sub setupBridge {
+    my ($self) = @_;
+    if ( $self->{_bridge} ) {
+       my $cmd = "sudo /usr/sbin/openvpn --mktun --dev-type tap --dev $self->{_intf} > /dev/null";
+       system($cmd) == 0 
+          or die "Error creating tap interface $self->{_intf}\n";
+       $cmd = "ip link set $self->{_intf} up promisc on";
+       system($cmd) == 0
+          or die "Error setting parameters for tap interface $self->{_intf}\n";
+       $cmd = "sudo brctl addif $self->{_bridge} $self->{_intf}";
+       system($cmd) == 0
+          or die "Error adding interface $self->{_intf} to bridge $self->{_bridge}\n";
+    }
+}
+
+sub configureBridge {
+    my ($self) = @_;
+    
+    if ( $self->{_bridge} ) {
+       # Set port cost
+       my $cmd = "sudo brctl setpathcost $self->{_bridge} $self->{_intf}"; 
+       if ( $self->{_bridgecost} ) { $cmd .= " $self->{_bridgecost}"; }
+       else { $cmd .= " 0"; }
+       system ($cmd) == 0
+          or die "Error setting bridge cost for $self->{_intf}\n";
+    
+       # Set port priority
+       $cmd = "sudo brctl setportprio $self->{_bridge} $self->{_intf}";
+       if ( $self->{_bridgeprio} ) { $cmd .= " $self->{_bridgeprio}"; }
+       else { $cmd .= " 0"; }
+       system ($cmd) == 0
+          or die "Error setting bridge priority for $self->{_intf}\n";
+   }
+}
 
 1;
-
