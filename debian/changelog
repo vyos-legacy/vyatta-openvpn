@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.10) unstable; urgency=low
+
+  * enable L2 bridging in OpenVPN
+
+ -- Robert Bays <rbays@roatan>  Thu, 24 Jun 2010 17:32:49 -0700
+
 vyatta-openvpn (0.2.9) unstable; urgency=low
 
   * UNRELEASED
