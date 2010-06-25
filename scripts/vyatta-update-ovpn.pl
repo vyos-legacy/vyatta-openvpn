@@ -30,7 +30,6 @@ if (defined($cmd)) {
   $oconfig->removeBridge();
   $config->setupBridge();
   $config->configureBridge();
-  print "DEBUG: $cmd\n";
   if ("$cmd" ne 'disable') { 
      system("$cmd");
      if ($? >> 8) {
