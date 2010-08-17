@@ -2,7 +2,6 @@ type: txt
 help: Set OpenVPN communication protocol
 syntax:expression: $VAR(@) in "udp", "tcp-passive", "tcp-active";
                    "Must be \"udp\", \"tcp-passive\", or \"tcp-active\""
-comp_help: Possible completions:
-  udp              Use UDP
-  tcp-passive      Use TCP and accepts connections passively
-  tcp-active       Use TCP and initiates connections actively
+val_help: udp; Use UDP
+val_help: tcp-passive; Use TCP and accepts connections passively
+val_help: tcp-active; Use TCP and initiates connections actively
