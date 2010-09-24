@@ -37,6 +37,13 @@ if (defined($cmd)) {
      }
   }
 }
+my $description = $config->{_description};
+  if ("$description" ne "" && -e "/sys/class/net/$vtun/ifalias")
+    {
+      my $cmdDesc = "echo \"$description\" >> /sys/class/net/$vtun/ifalias";
+      system($cmdDesc);
+    }
+
 if (defined($err)) {
   print STDERR "OpenVPN configuration error: $err.\n";
   exit 1;

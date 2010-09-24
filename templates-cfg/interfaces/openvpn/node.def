@@ -1,7 +1,8 @@
 tag:
 priority: 460
 type: txt
-help: Configure OpenVPN tunnel interface
+help: OpenVPN tunnel interface name
+val_help: <vtunN>; Configure OpenVPN tunnel interface name 
 syntax:expression: pattern $VAR(@) "^vtun[0-9]+$"
         ; "OpenVPN tunnel interface must be named \"vtun<num>\""
 

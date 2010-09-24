@@ -16,6 +16,7 @@ my $ping_restart = 60;
 
 my %fields = (
   _intf          => undef,
+  _description   => undef, 
   _local_addr    => undef,
   _local_host    => undef,
   _remote_addr   => undef,
@@ -104,6 +105,7 @@ sub setup {
   $self->{_bridge} = $config->returnValue('bridge-group bridge');
   $self->{_bridgecost} = $config->returnValue('bridge-group cost');
   $self->{_bridgeprio} = $config->returnValue('bridge-group priority');
+  $self->{_description} = $config->returnValue('description');
   if ( $config->exists('disable') ) { $self->{_disable} = 1; }
 
   my @clients = $config->listNodes('server client');
@@ -178,6 +180,7 @@ sub setupOrig {
   $self->{_bridge} = $config->returnOrigValue('bridge-group bridge');
   $self->{_bridgecost} = $config->returnOrigValue('bridge-group cost');
   $self->{_bridgeprio} = $config->returnOrigValue('bridge-group priority');
+  $self->{_description} = $config->returnOrigValue('description');
   if ( $config->existsOrig('disable') ) { $self->{_disable} = 1; }
 
   my @clients = $config->listOrigNodes('server client');
@@ -275,6 +278,7 @@ sub isDifferentFrom {
   return 1 if ($this->{_bridgecost} ne $that->{_bridgecost});
   return 1 if ($this->{_bridgeprio} ne $that->{_bridgeprio});
   return 1 if ($this->{_disable} ne $that->{_disable});
+  return 1 if ($this->{_description} ne $that->{_description});
 
   return 0;
 }
