@@ -476,24 +476,40 @@ sub get_command {
     return (undef, 'Must specify "tls ca-cert-file"')
       if (!defined($self->{_tls_ca}));
     return (undef, "Specified ca-cert-file \"$self->{_tls_ca}\" is not valid")
-      if (! -r $self->{_tls_ca});
+      if (! -r $self->{_tls_ca} || !open(FP, "<$self->{_tls_ca}"));
+    my @hdrs = grep { /^-----BEGIN CERTIFICATE-----$/ } <FP>;
+    close(FP);
+    return (undef, "Specified ca-cert-file \"$self->{_tls_ca}\" is not valid")
+      if (scalar(@hdrs) != 1); 
     $cmd .= " --ca $self->{_tls_ca}";
     
     return (undef, 'Must specify "tls cert-file"')
       if (!defined($self->{_tls_cert}));
     return (undef, "Specified cert-file \"$self->{_tls_cert}\" is not valid")
-      if (! -r $self->{_tls_cert});
+      if (! -r $self->{_tls_cert} || !open(FP, "<$self->{_tls_cert}"));
+    @hdrs = grep { /^-----BEGIN CERTIFICATE-----$/ } <FP>;
+    close(FP); 
+    return (undef, "Specified cert-file \"$self->{_tls_cert}\" is not valid")
+      if (scalar(@hdrs) != 1); 
     $cmd .= " --cert $self->{_tls_cert}";
     
     return (undef, 'Must specify "tls key-file"')
       if (!defined($self->{_tls_key}));
     return (undef, "Specified key-file \"$self->{_tls_key}\" is not valid")
-      if (! -r $self->{_tls_key});
+      if (! -r $self->{_tls_key} || !open(FP, "<$self->{_tls_key}"));
+    @hdrs = grep { /^-----BEGIN RSA PRIVATE KEY-----$/ } <FP>;
+    close(FP); 
+    return (undef, "Specified key-file \"$self->{_tls_key}\" is not valid")
+      if (scalar(@hdrs) != 1); 
     $cmd .= " --key $self->{_tls_key}";
    
     if (defined($self->{_tls_crl})) {
       return (undef, "Specified crl-file \"$self->{_tls_crl}\" is not valid")
-        if (! -r $self->{_tls_crl});
+        if (! -r $self->{_tls_crl} || !open(FP, "<$self->{_tls_crl}"));
+      @hdrs = grep { /^-----BEGIN X509 CRL-----$/ } <FP>;
+      close(FP); 
+      return (undef, "Specified crl-file \"$self->{_tls_crl}\" is not valid")
+        if (scalar(@hdrs) != 1); 
       $cmd .= " --crl-verify $self->{_tls_crl}";
     }
 
@@ -504,7 +520,11 @@ sub get_command {
       return (undef, 'Cannot specify "tls dh-file" in client mode')
         if ($client);
       return (undef, "Specified dh-file \"$self->{_tls_dh}\" is not valid")
-        if (! -r $self->{_tls_dh});
+        if (! -r $self->{_tls_dh} || !open(FP, "<$self->{_tls_dh}"));
+      @hdrs = grep { /^-----BEGIN DH PARAMETERS-----$/ } <FP>;
+      close(FP); 
+      return (undef, "Specified dh-file \"$self->{_tls_dh}\" is not valid")
+        if (scalar(@hdrs) != 1);
       $cmd .= " --dh $self->{_tls_dh}";
     }
     
