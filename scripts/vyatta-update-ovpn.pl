@@ -12,6 +12,10 @@ $config->setup($vtun);
 $oconfig->setupOrig($vtun);
 
 if (!($config->isDifferentFrom($oconfig))) {
+  if ($config->isEmpty()) {
+    print STDERR "Empty Configuration\n";
+    exit 1;
+  } 
   # config not changed. do nothing.
   exit 0;
 }
