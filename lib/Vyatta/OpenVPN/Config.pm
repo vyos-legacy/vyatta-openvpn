@@ -49,6 +49,7 @@ my %fields = (
   _bridgecost    => undef,
   _bridgeprio    => undef,
   _disable	 => undef,
+  _name_server   => [],
 );
 
 my $iftype = 'interfaces openvpn';
@@ -106,8 +107,10 @@ sub setup {
   $self->{_bridgecost} = $config->returnValue('bridge-group cost');
   $self->{_bridgeprio} = $config->returnValue('bridge-group priority');
   $self->{_description} = $config->returnValue('description');
+  my @nserver = $config->returnValues('server name-server');
+  $self->{_name_server} = \@nserver;
   if ( $config->exists('disable') ) { $self->{_disable} = 1; }
-
+  
   my @clients = $config->listNodes('server client');
   # client IPs
   my @cips = ();
@@ -181,6 +184,8 @@ sub setupOrig {
   $self->{_bridgecost} = $config->returnOrigValue('bridge-group cost');
   $self->{_bridgeprio} = $config->returnOrigValue('bridge-group priority');
   $self->{_description} = $config->returnOrigValue('description');
+  my @nserver = $config->returnOrigValues('server name-server');
+  $self->{_name_server} = \@nserver;
   if ( $config->existsOrig('disable') ) { $self->{_disable} = 1; }
 
   my @clients = $config->listOrigNodes('server client');
@@ -279,7 +284,7 @@ sub isDifferentFrom {
   return 1 if ($this->{_bridgeprio} ne $that->{_bridgeprio});
   return 1 if ($this->{_disable} ne $that->{_disable});
   return 1 if ($this->{_description} ne $that->{_description});
-
+  return 1 if (listsDiff($this->{_name_server}, $that->{_name_server}));
   return 0;
 }
 
@@ -578,7 +583,16 @@ sub get_command {
         $cmd .= ' --push "redirect-gateway" ';
       }
     }
-
+  if (scalar(@{$self->{_name_server}}) > 0) { 
+   for my $nserver (@{$self->{_name_server}}) {
+     if (!Vyatta::TypeChecker::validateType('ipv4', $nserver, 1)) {
+       if (!($nserver =~ /^[0-9.]+$/)) {
+         return (undef, 'Must specify IP address for "name-server"');
+       }
+     }
+    $cmd .= " --push dhcp-option DNS $nserver";
+   }
+  }
     return (undef, 'Must specify "server subnet" option in server mode')
       if (!defined($self->{_server_def}));
     my $s = new NetAddr::IP "$self->{_server_subnet}";

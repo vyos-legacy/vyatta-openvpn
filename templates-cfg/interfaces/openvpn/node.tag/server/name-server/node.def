@@ -1,0 +1,4 @@
+multi:
+type: ipv4
+help: Set Domain Name Server (DNS) 
+val_help: ipv4; IP address of name-server 
