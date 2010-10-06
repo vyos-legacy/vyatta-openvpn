@@ -1,3 +1,12 @@
+vyatta-openvpn (0.2.17) unstable; urgency=low
+
+  * fix for bug# 5519 and 4035
+  * fix for bug # 4003
+  * Bug fix for 4003 and 3776.
+  * bug fix for:
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Wed, 06 Oct 2010 00:52:25 +0000
+
 vyatta-openvpn (0.2.16) unstable; urgency=low
 
   * UNRELEASED
