@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.18) unstable; urgency=low
+
+  * Included the missed script file
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 07 Oct 2010 18:21:09 +0000
+
 vyatta-openvpn (0.2.17) unstable; urgency=low
 
   * fix for bug# 5519 and 4035
