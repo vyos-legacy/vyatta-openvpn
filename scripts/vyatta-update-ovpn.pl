@@ -5,6 +5,7 @@ use lib "/opt/vyatta/share/perl5";
 use Vyatta::OpenVPN::Config;
 
 my $vtun = shift;
+my $statusDir = "/opt/vyatta/etc/openvpn/status";
 
 my $config = new Vyatta::OpenVPN::Config;
 my $oconfig = new Vyatta::OpenVPN::Config;
@@ -24,6 +25,10 @@ if ($config->isEmpty()) {
   # deleted
   Vyatta::OpenVPN::Config::kill_daemon($vtun);
   $oconfig->removeBridge();
+  # delete the server status file if exists
+  if (-e "$statusDir/$vtun.status") {
+  `rm -f $statusDir/$vtun.status 2> /dev/null`;  
+  } 
   exit 0;
 }
 
