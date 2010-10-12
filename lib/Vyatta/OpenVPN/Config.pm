@@ -244,6 +244,48 @@ sub pairListsDiff {
   return 0;
 }
 
+# no restart of openvpn process required if clients/description is
+# added/deleted 
+sub isRestartNeeded {
+  my ($this, $that) = @_;
+
+  # suppress uninitialized warnings here
+  no warnings qw(uninitialized);
+
+  return 1 if ($this->{_is_empty} ne $that->{_is_empty});
+  return 1 if ($this->{_local_addr} ne $that->{_local_addr});
+  return 1 if ($this->{_local_host} ne $that->{_local_host});
+  return 1 if ($this->{_remote_addr} ne $that->{_remote_addr});
+  return 1 if (listsDiff($this->{_remote_host}, $that->{_remote_host}));
+  return 1 if ($this->{_options} ne $that->{_options});
+  return 1 if ($this->{_secret_file} ne $that->{_secret_file});
+  return 1 if ($this->{_mode} ne $that->{_mode});
+  return 1 if ($this->{_server_subnet} ne $that->{_server_subnet});
+  return 1 if ($this->{_server_def} ne $that->{_server_def});
+  return 1 if ($this->{_tls_ca} ne $that->{_tls_ca});
+  return 1 if ($this->{_tls_cert} ne $that->{_tls_cert});
+  return 1 if ($this->{_tls_key} ne $that->{_tls_key});
+  return 1 if ($this->{_tls_dh} ne $that->{_tls_dh});
+  return 1 if ($this->{_tls_crl} ne $that->{_tls_crl});
+  return 1 if ($this->{_tls_role} ne $that->{_tls_role});
+  return 1 if ($this->{_tls_def} ne $that->{_tls_def});
+  return 1 if ($this->{_topo} ne $that->{_topo});
+  return 1 if ($this->{_proto} ne $that->{_proto});
+  return 1 if ($this->{_local_port} ne $that->{_local_port});
+  return 1 if ($this->{_remote_port} ne $that->{_remote_port});
+  return 1 if ($this->{_r_def_route} ne $that->{_r_def_route});
+  return 1 if ($this->{_r_def_rt_loc} ne $that->{_r_def_rt_loc});
+  return 1 if ($this->{_encrypt} ne $that->{_encrypt});
+  return 1 if ($this->{_hash} ne $that->{_hash});
+  return 1 if ($this->{_qos} ne $that->{_qos});
+  return 1 if ($this->{_bridge} ne $that->{_bridge});
+  return 1 if ($this->{_bridgecost} ne $that->{_bridgecost});
+  return 1 if ($this->{_bridgeprio} ne $that->{_bridgeprio});
+  return 1 if ($this->{_disable} ne $that->{_disable});
+  return 1 if (listsDiff($this->{_name_server}, $that->{_name_server}));
+  return 0;
+}
+
 sub isDifferentFrom {
   my ($this, $that) = @_;
 

@@ -34,7 +34,7 @@ if ($config->isEmpty()) {
 
 my ($cmd, $err) = $config->get_command();
 
-if (defined($cmd)) {
+if ($config->isRestartNeeded($oconfig) && defined($cmd)) {
   Vyatta::OpenVPN::Config::kill_daemon($vtun);
   $oconfig->removeBridge();
   $config->setupBridge();
