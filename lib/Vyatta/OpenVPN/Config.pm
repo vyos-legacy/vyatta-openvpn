@@ -50,6 +50,8 @@ my %fields = (
   _bridgeprio    => undef,
   _disable	 => undef,
   _name_server   => [],
+  _push_route    => [],
+  _client_route  => [], 
 );
 
 my $iftype = 'interfaces openvpn';
@@ -109,6 +111,8 @@ sub setup {
   $self->{_description} = $config->returnValue('description');
   my @nserver = $config->returnValues('server name-server');
   $self->{_name_server} = \@nserver;
+  my @proute = $config->returnValues('server push-route');
+  $self->{_push_route} = \@proute;
   if ( $config->exists('disable') ) { $self->{_disable} = 1; }
   
   my @clients = $config->listNodes('server client');
@@ -130,7 +134,15 @@ sub setup {
     }
   }
   $self->{_client_subnet} = \@csubs;
-
+  # client push routes
+  my @croute = ();
+  for my $c (@clients) {
+   my @cproute = $config->returnValues("server client $c push-route");
+   if (scalar(@cproute) >0) {
+    push @croute, [ $c, @cproute ];
+   } 
+  } 
+  $self->{_client_route} = \@croute;
   $self->{_topo} = $config->returnValue('server topology');
   $self->{_proto} = $config->returnValue('protocol');
   $self->{_local_port} = $config->returnValue('local-port');
@@ -186,6 +198,8 @@ sub setupOrig {
   $self->{_description} = $config->returnOrigValue('description');
   my @nserver = $config->returnOrigValues('server name-server');
   $self->{_name_server} = \@nserver;
+  my @proute = $config->returnOrigValues('server push-route');
+  $self->{_push_route} = \@proute;
   if ( $config->existsOrig('disable') ) { $self->{_disable} = 1; }
 
   my @clients = $config->listOrigNodes('server client');
@@ -207,6 +221,15 @@ sub setupOrig {
     }
   }
   $self->{_client_subnet} = \@csubs;
+  # client push routes
+  my @croute = ();
+  for my $c (@clients) {
+   my @cproute = $config->returnOrigValues("server client $c push-route");
+   if (scalar(@cproute) >0) {
+    push @croute, [ $c, @cproute ];
+   } 
+  } 
+  $self->{_client_route} = \@croute;
 
   $self->{_topo} = $config->returnOrigValue('server topology');
   $self->{_proto} = $config->returnOrigValue('protocol');
@@ -243,6 +266,22 @@ sub pairListsDiff {
   }
   return 0;
 }
+
+sub doublePairDiff {
+  my @a = @{$_[0]};
+  my @b = @{$_[1]};
+  return 1 if (scalar(@a) != scalar(@b));
+  for my $i (0 .. (scalar(@a) - 1)) {
+    my @L1 = @{$a[$i]};
+    my @L2 = @{$b[$i]};
+    return 1 if ((scalar @L1) != (scalar @L2));
+    while (my $L1 = shift @L1) {
+      my $L2 = shift @L2;
+      return 1 if ($L1 ne $L2);
+    }
+  }
+  return 0;
+} 
 
 # no restart of openvpn process required if clients/description is
 # added/deleted 
@@ -283,6 +322,7 @@ sub isRestartNeeded {
   return 1 if ($this->{_bridgeprio} ne $that->{_bridgeprio});
   return 1 if ($this->{_disable} ne $that->{_disable});
   return 1 if (listsDiff($this->{_name_server}, $that->{_name_server}));
+  return 1 if (listsDiff($this->{_push_route}, $that->{_push_route}));
   return 0;
 }
 
@@ -327,6 +367,8 @@ sub isDifferentFrom {
   return 1 if ($this->{_disable} ne $that->{_disable});
   return 1 if ($this->{_description} ne $that->{_description});
   return 1 if (listsDiff($this->{_name_server}, $that->{_name_server}));
+  return 1 if (listsDiff($this->{_push_route}, $that->{_push_route}));
+  return 1 if (doublePairDiff($this->{_client_route}, $that->{_client_route}));
   return 0;
 }
 
@@ -625,6 +667,7 @@ sub get_command {
         $cmd .= ' --push "redirect-gateway" ';
       }
     }
+  
   if (scalar(@{$self->{_name_server}}) > 0) { 
    for my $nserver (@{$self->{_name_server}}) {
      if (!Vyatta::TypeChecker::validateType('ipv4', $nserver, 1)) {
@@ -635,7 +678,17 @@ sub get_command {
     $cmd .= " --push dhcp-option DNS $nserver";
    }
   }
-    return (undef, 'Must specify "server subnet" option in server mode')
+ 
+  if (scalar(@{$self->{_push_route}}) > 0) { 
+   for my $proute (@{$self->{_push_route}}) {
+    my $s = new NetAddr::IP "$proute";
+    my $n = $s->addr();
+    my $m = $s->mask();
+    $cmd .= " --push route $n $m";
+   }
+  } 
+
+   return (undef, 'Must specify "server subnet" option in server mode')
       if (!defined($self->{_server_def}));
     my $s = new NetAddr::IP "$self->{_server_subnet}";
     my $n = $s->addr();
@@ -672,6 +725,19 @@ sub get_command {
         return (undef, 'Cannot generate per-client configurations')
           if ($? >> 8);
       }
+      for my $ref (@{$self->{_client_route}}) {
+        my $client = ${$ref}[0];
+        my $i=1;
+        while (${$ref}[$i]) { 
+         my $cs = new NetAddr::IP "${$ref}[$i]";
+         my $cn = $cs->addr();
+         my $cm = $cs->mask();
+         system("echo push \"route $cn $cm\" >> $ccd_dir/$client");
+         return (undef, 'Cannot generate per-client configurations')
+          if ($? >> 8);
+         $i += 1;
+        }
+     }
     }
     $cmd .= " --client-config-dir $ccd_dir";
   } else {

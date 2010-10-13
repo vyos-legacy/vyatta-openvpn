@@ -1,0 +1,3 @@
+multi:
+type: ipv4net
+help: Set route to be pushed to all clients 
