@@ -51,7 +51,8 @@ my %fields = (
   _disable	 => undef,
   _name_server   => [],
   _push_route    => [],
-  _client_route  => [], 
+  _client_route  => [],
+  _server_mclients  => undef, 
 );
 
 my $iftype = 'interfaces openvpn';
@@ -113,6 +114,7 @@ sub setup {
   $self->{_name_server} = \@nserver;
   my @proute = $config->returnValues('server push-route');
   $self->{_push_route} = \@proute;
+  $self->{_server_mclients} = $config->returnValue('server max-connections');
   if ( $config->exists('disable') ) { $self->{_disable} = 1; }
   
   my @clients = $config->listNodes('server client');
@@ -200,6 +202,7 @@ sub setupOrig {
   $self->{_name_server} = \@nserver;
   my @proute = $config->returnOrigValues('server push-route');
   $self->{_push_route} = \@proute;
+  $self->{_server_mclients} = $config->returnOrigValue('server max-connections');
   if ( $config->existsOrig('disable') ) { $self->{_disable} = 1; }
 
   my @clients = $config->listOrigNodes('server client');
@@ -323,6 +326,7 @@ sub isRestartNeeded {
   return 1 if ($this->{_disable} ne $that->{_disable});
   return 1 if (listsDiff($this->{_name_server}, $that->{_name_server}));
   return 1 if (listsDiff($this->{_push_route}, $that->{_push_route}));
+  return 1 if ($this->{_server_mclients} ne $that->{_server_mclients});
   return 0;
 }
 
@@ -369,6 +373,7 @@ sub isDifferentFrom {
   return 1 if (listsDiff($this->{_name_server}, $that->{_name_server}));
   return 1 if (listsDiff($this->{_push_route}, $that->{_push_route}));
   return 1 if (doublePairDiff($this->{_client_route}, $that->{_client_route}));
+  return 1 if ($this->{_server_mclients} ne $that->{_server_mclients});
   return 0;
 }
 
@@ -688,6 +693,11 @@ sub get_command {
    }
   } 
 
+ if (defined ($self->{_server_mclients})) {
+    return (undef, 'Maximum client connection cannot be set to 0 or less') 
+     if ($self->{_server_mclients} <= 0);
+    $cmd .= " --max-clients $self->{_server_mclients}"; 
+ }
    return (undef, 'Must specify "server subnet" option in server mode')
       if (!defined($self->{_server_def}));
     my $s = new NetAddr::IP "$self->{_server_subnet}";

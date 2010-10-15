@@ -1,0 +1,3 @@
+type: u32
+help: Set maximum number of client connections
+val_help: u32:1-xxx; Number of concurrent clients   
