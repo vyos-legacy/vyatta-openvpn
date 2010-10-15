@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.22) unstable; urgency=low
+
+  * bug fix for:
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Fri, 15 Oct 2010 20:51:14 +0000
+
 vyatta-openvpn (0.2.21) unstable; urgency=low
 
   * bug fix for:
