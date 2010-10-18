@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.23) unstable; urgency=low
+
+  * Help string modification for vyatta-openvpn package.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Mon, 18 Oct 2010 17:20:34 +0000
+
 vyatta-openvpn (0.2.22) unstable; urgency=low
 
   * bug fix for:
