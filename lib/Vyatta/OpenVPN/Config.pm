@@ -130,9 +130,9 @@ sub setup {
   # client subnets 
   my @csubs = ();
   for my $c (@clients) {
-    my $s = $config->returnValue("server client $c subnet");
-    if (defined($s)) {
-      push @csubs, [ $c, $s ];
+    my @s = $config->returnValues("server client $c subnet");
+    if (scalar(@s) >0) {
+      push @csubs, [ $c, @s ];
     }
   }
   $self->{_client_subnet} = \@csubs;
@@ -218,9 +218,9 @@ sub setupOrig {
   # client subnets 
   my @csubs = ();
   for my $c (@clients) {
-    my $s = $config->returnOrigValue("server client $c subnet");
-    if (defined($s)) {
-      push @csubs, [ $c, $s ];
+    my @s = $config->returnOrigValues("server client $c subnet");
+    if (scalar(@s) >0) {
+      push @csubs, [ $c, @s ];
     }
   }
   $self->{_client_subnet} = \@csubs;
@@ -354,7 +354,7 @@ sub isDifferentFrom {
   return 1 if ($this->{_tls_role} ne $that->{_tls_role});
   return 1 if ($this->{_tls_def} ne $that->{_tls_def});
   return 1 if (pairListsDiff($this->{_client_ip}, $that->{_client_ip}));
-  return 1 if (pairListsDiff($this->{_client_subnet},
+  return 1 if (doublePairDiff($this->{_client_subnet},
                              $that->{_client_subnet}));
   return 1 if ($this->{_topo} ne $that->{_topo});
   return 1 if ($this->{_proto} ne $that->{_proto});
@@ -728,12 +728,16 @@ sub get_command {
       }
       for my $ref (@{$self->{_client_subnet}}) {
         my $client = ${$ref}[0];
-        my $cs = new NetAddr::IP "${$ref}[1]";
-        my $cn = $cs->addr();
-        my $cm = $cs->mask();
-        system("echo \"iroute $cn $cm\" >> $ccd_dir/$client");
-        return (undef, 'Cannot generate per-client configurations')
+        my $i=1;
+        while (${$ref}[$i]) { 
+         my $cs = new NetAddr::IP "${$ref}[$i]";
+         my $cn = $cs->addr();
+         my $cm = $cs->mask();
+         system("echo \"iroute $cn $cm\" >> $ccd_dir/$client");
+         return (undef, 'Cannot generate per-client configurations')
           if ($? >> 8);
+         $i += 1;
+        }
       }
       for my $ref (@{$self->{_client_route}}) {
         my $client = ${$ref}[0];
