@@ -1,4 +1,4 @@
 type: u32
-help: Set the path cost for this port
+help: Path cost for this port
 val_help: u32:0-2147483647; Path cost for this port
 commit:expression: $VAR(../bridge/@) != ""; "interface must first be assigned to a bridge"

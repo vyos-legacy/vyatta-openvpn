@@ -1,2 +1,2 @@
 type: txt
-help: Set file containing certificate revocation list (CRL) for this host
+help: File containing certificate revocation list (CRL) for this host

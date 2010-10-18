@@ -1,2 +1,2 @@
 type: txt
-help: Set file containing this host's private key
+help: File containing this host's private key

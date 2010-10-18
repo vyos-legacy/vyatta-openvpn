@@ -1,2 +1,2 @@
 type: ipv4
-help: Set local IP address to which connections are accepted (all if not set)
+help: Local IP address to accept connections (all if not set)

@@ -1,4 +1,4 @@
 tag:
 type: txt
-help: Set client-specific settings
-val_help: <name>; Client name in the certificate
+help: Client-specific settings
+val_help: <name>; Client common-name in the certificate

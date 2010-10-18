@@ -1,7 +1,7 @@
 type: txt
-help: Set OpenVPN mode of operation
+help: OpenVPN mode of operation
 syntax:expression: $VAR(@) in "site-to-site", "client", "server";
                    "Must be \"site-to-site\", \"client\", or \"server\""
-val_help: site-to-site; Use site-to-site mode
-val_help: client; Act as client in client-server mode
-val_help: server; Act as server in client-server mode
+val_help: site-to-site; Site-to-site mode
+val_help: client; Client in client-server mode
+val_help: server; Server in client-server mode

@@ -1,5 +1,5 @@
 type: txt
-help: Set data encryption algorithm
+help: Data encryption algorithm option
 syntax:expression: $VAR(@) in "des", "3des", "bf128", "bf256", "aes128", "aes192", "aes256";
                    "Invalid encryption algorithm"
 val_help: des; DES algorithm

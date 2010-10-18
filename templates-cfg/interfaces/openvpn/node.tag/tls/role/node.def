@@ -1,5 +1,5 @@
 type: txt
-help: Set role in TLS negotiation
+help: Role in TLS negotiation
 syntax:expression: $VAR(@) in "active", "passive";
                    "Must be \"active\" or \"passive\""
 val_help: active; Initiate TLS negotiation actively

@@ -1,2 +1,2 @@
 type: txt
-help: Set file containing the secret key shared with remote end of tunnel
+help: File containing the secret key shared with remote end of tunnel

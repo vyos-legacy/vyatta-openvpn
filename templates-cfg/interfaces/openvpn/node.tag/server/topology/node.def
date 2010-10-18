@@ -1,5 +1,5 @@
 type: txt
-help: Set topology for clients
+help: Topology for clients
 syntax:expression: $VAR(@) in "point-to-point", "subnet";
                    "Must be \"point-to-point\" or \"subnet\""
 val_help: point-to-point; "Point-to-point" topology

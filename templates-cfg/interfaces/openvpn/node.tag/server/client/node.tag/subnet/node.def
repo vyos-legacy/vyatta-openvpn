@@ -1,2 +1,2 @@
 type: ipv4net
-help: Set subnet belonging to client
+help: Subnet belonging to the client
