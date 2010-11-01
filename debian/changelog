@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.25) unstable; urgency=low
+
+  * Setting upper limit for maximum concurrent clients.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Mon, 01 Nov 2010 21:30:01 +0000
+
 vyatta-openvpn (0.2.24) unstable; urgency=low
 
   * bug fix for:
