@@ -50,14 +50,14 @@ if ($vtun) {
 }
 print "This will reset and re-establish all tunnel connections on this interface.\n";
 if (prompt("Are you sure you want to continue? (y/n)", -y1d=>"y")){
-  $pid = `ps aux | egrep openvpn.*.$vtun | grep -v egrep | awk '{print \$2}'`;
+  $pid = `cat /var/run/openvpn-$vtun.pid`;
    if ($pid) {
       $cmd .= "$pid";
       system($cmd);
-      print "Restarted OpenVPN process on interface $vtun.\n";
+      print "Tunnel connections for interface $vtun have been reset.\n";
    }
    else {
-    print "No OpenVPN process running on interface $vtun.\n";
+    print "No tunnel connection on interface $vtun.\n";
    }
   }
 else{
