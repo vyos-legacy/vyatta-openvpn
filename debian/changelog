@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.29) unstable; urgency=low
+
+  * new branch
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Tue, 28 Dec 2010 13:51:36 -0800
+
 vyatta-openvpn (0.2.28) unstable; urgency=low
 
   * Changed restarting connection to use pid file.
