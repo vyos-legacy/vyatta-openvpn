@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.28+mendocino3) unstable; urgency=low
+
+  * Change help text for replace-default-route local
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Wed, 05 Jan 2011 18:16:18 -0800
+
 vyatta-openvpn (0.2.28+mendocino2) unstable; urgency=low
 
   * remove invocation of script that has no effect and triggers error.
