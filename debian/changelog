@@ -1,3 +1,10 @@
+vyatta-openvpn (0.2.31) unstable; urgency=low
+
+  * Bugfix 2837: Change vpn openvpn-key generate to generate vpn
+    openvpn-key to be more consistent with the rest of the system
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 21 Jan 2011 18:56:52 -0600
+
 vyatta-openvpn (0.2.30) unstable; urgency=low
 
   [ An-Cheng Huang ]
