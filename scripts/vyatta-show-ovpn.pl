@@ -1,7 +1,20 @@
 #!/usr/bin/perl
 
 use strict;
+use Getopt::Long;
+use lib "/opt/vyatta/share/perl5/";
+use Vyatta::Config;
 
+#valid modes
+my %mode_hash = ( 
+  'server'	=> \&output_server_status,
+  'client'	=> \&output_client_status,
+  'site-to-site' => \&output_sitetosite_status,
+);
+
+##main
+my $mode;
+GetOptions("mode=s" => \$mode);
 my $STATUS_PATH = '/opt/vyatta/etc/openvpn/status';
 
 if (!opendir(SDIR, "$STATUS_PATH")) {
@@ -31,14 +44,17 @@ sub stat2str {
 sub output_server_status {
   my $intf = shift;
   my @lines = @_;
+  my $config = new Vyatta::Config;
+  $config->setLevel("interfaces openvpn $intf");
+  my $desc = $config->returnOrigValue("description");
+   
   if (!($lines[0] =~ /^OpenVPN CLIENT LIST$/)) {
     return 0;
   }
-  $lines[1] =~ /^Updated,(.*)$/;
   print <<EOH;
-OpenVPN server status on $intf (last updated on $1)
+OpenVPN server status on $intf [$desc] 
 
-Client          Remote IP       Tunnel IP       TX byte RX byte Connected Since
+Client CN       Remote IP       Tunnel IP       TX byte RX byte Connected Since
 --------------- --------------- --------------- ------- ------- ------------------------
 EOH
 
@@ -75,22 +91,109 @@ EOH
   return 1;
 }
 
+sub parse_status {
+  my ($intf, $mode, @lines) = @_; 
+  my @values = (); 
+  my $config = new Vyatta::Config;
+  if (!($lines[0] =~ /^OpenVPN STATISTICS$/)) {
+    return 0;
+  }
+  my $rbytes;
+  my $sbytes;
+  my $i = 2;
+  while (!($lines[$i] =~ /^Auth/)) {
+   if ($lines[$i] =~ /^[A-Z\/]+ read bytes/) {
+     my @recv = split (/,/,$lines[$i]);
+     $rbytes = $rbytes + $recv[1];
+   }
+   elsif ($lines[$i] =~ /^[A-Z\/]+ write bytes/) {
+     my @sent = split (/,/,$lines[$i]);
+     $sbytes = $sbytes + $sent[1];
+   }
+   $i++;
+  }
+   my $recv = stat2str($rbytes);
+   my $sent = stat2str($sbytes);
+   $config->setLevel("interfaces openvpn $intf");
+   my $desc = $config->returnOrigValue("description");
+   my @remote = $config->returnOrigValues("remote-host");
+   if ((scalar @remote) > 1) {
+     $remote[0] = "N/A";
+   }
+   push (@values, $desc, $remote[0]);
+   push (@values, $sent, $recv);
+   if ($mode eq "site-to-site") {
+     my $rsite = "N/A"; 
+     my $rtunnel = $config->returnOrigValue("remote-address");
+     if ($config->existsOrig("shared-secret-key-file")) {
+      $rsite = "None (PSK)";
+     }
+     push (@values, $rsite, $rtunnel); 
+   }
+   return @values;
+}
+
+sub output_client_status {
+  my $intf = shift;
+  my @lines = @_;
+  my $mode = "client"; 
+  my ($desc, $remote, $sent, $recv) = parse_status($intf, $mode, @lines); 
+  print <<EOH;
+OpenVPN client status on $intf [$desc]
+
+Server CN       Remote IP       Tunnel IP       TX byte RX byte Connected Since
+--------------- --------------- --------------- ------- ------- ------------------------
+EOH
+ 
+  printf "%-15s %-15s %-15s %7s %7s %s\n",
+           "N/A", $remote, "N/A", $sent, $recv, "N/A";
+  print "\n\n";
+  return 1;
+}
+
+
+sub output_sitetosite_status {
+  my $intf = shift;
+  my @lines = @_;
+  my $mode = "site-to-site";
+  my ($desc, $remote, $sent, $recv, $rsite, $rtunnel) = parse_status($intf, $mode, @lines); 
+  print <<EOH;
+OpenVPN client status on $intf [$desc] 
+
+Remote CN       Remote IP       Tunnel IP       TX byte RX byte Connected Since
+--------------- --------------- --------------- ------- ------- ------------------------
+EOH
+  printf "%-15s %-15s %-15s %7s %7s %s\n",
+           $rsite, $remote, $rtunnel, $sent, $recv, "N/A";
+  print "\n\n";
+  return 1;
+}
+
 my $status_shown = 0;
+my $config = new Vyatta::Config;
 foreach my $vtun (@vtuns) {
   $vtun =~ /^(.*)\.status$/;
   my $intf = $1;
-  if (!open(VT, "$STATUS_PATH/$vtun")) {
+  $config->setLevel("interfaces openvpn $intf");
+  my $modeVal = $config->returnOrigValue("mode"); 
+  if ($mode eq $modeVal) {
+   if (!open(VT, "$STATUS_PATH/$vtun")) {
     print STDERR "Cannot get status for \"$intf\"\n";
     next;
-  }
-  my @slines = <VT>;
-  close VT;
-  if (output_server_status($intf, @slines)) {
+   }
+   my @slines = <VT>;
+   close VT;
+   my $func;
+   if (defined $mode_hash{$mode}) {
+    $func = $mode_hash{$mode};
+   } 
+   if (&$func($intf, @slines)) {
     $status_shown = 1;
+   }
   }
-}
+ }
 if (!$status_shown) {
-  print STDERR "Cannot find active OpenVPN servers\n";
+  print STDERR "Cannot find active OpenVPN $mode connections\n";
   exit 1;
 }
 

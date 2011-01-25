@@ -1,0 +1,2 @@
+help: Show status of tunnels for OpenVPN server
+run: sudo ${vyatta_bindir}/sudo-users/vyatta-show-ovpn.pl --mode=site-to-site
