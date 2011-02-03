@@ -1,3 +1,11 @@
+vyatta-openvpn (0.2.28+mendocino4) unstable; urgency=low
+
+  * Revert "bug fix for 3860 - enabling pam authentication on server and
+    username/password"
+  * Adding pid file option for OpenVPN daemon.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 03 Feb 2011 23:50:14 +0000
+
 vyatta-openvpn (0.2.28+mendocino3) unstable; urgency=low
 
   * Change help text for replace-default-route local
