@@ -1,3 +1,10 @@
+vyatta-openvpn (0.2.32) unstable; urgency=low
+
+  *  fix for bug # 3603. Added following op-mode commands
+  * fix for bug # 4923 - setting openvpn as 'tap' device for
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Wed, 09 Mar 2011 17:39:03 -0800
+
 vyatta-openvpn (0.2.31) unstable; urgency=low
 
   * Bugfix 2837: Change vpn openvpn-key generate to generate vpn
