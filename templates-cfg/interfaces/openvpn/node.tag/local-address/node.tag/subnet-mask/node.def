@@ -1,0 +1,2 @@
+type: ipv4
+help: Subnet-mask for local IP address of tunnel

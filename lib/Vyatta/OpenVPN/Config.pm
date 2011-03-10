@@ -56,7 +56,9 @@ my %fields = (
   _server_mclients  => undef,
   _pam_login     => undef,
   _pam_username  => undef,
-  _pam_password  => undef, 
+  _pam_password  => undef,
+  _laddr_subnet	 => undef,
+  _tap_device	 => undef, 
 );
 
 my $iftype = 'interfaces openvpn';
@@ -87,9 +89,9 @@ sub setup {
   } else {
     $self->{_is_empty} = 0;
   }
-  
+  my @laddr = $config->listNodes('local-address'); 
   $self->{_intf} = $intf;
-  $self->{_local_addr} = $config->returnValue('local-address');
+  $self->{_local_addr} = $laddr[0];
   $self->{_local_host} = $config->returnValue('local-host');
   $self->{_remote_addr} = $config->returnValue('remote-address');
   my @tmp = $config->returnValues('remote-host');
@@ -124,7 +126,10 @@ sub setup {
   if ( $config->exists('disable') ) { $self->{_disable} = 1; }
   $self->{_pam_username} = $config->returnValue('username');
   $self->{_pam_password} = $config->returnValue('password');
-  
+  if ( $config->exists('device-type use-tap-device') ) { $self->{_tap_device} = 1; } 
+  if ( $config->exists('local-address') ) { 
+    $self->{_laddr_subnet} = $config->returnValue("local-address $laddr[0] subnet-mask");
+  } 
   my @clients = $config->listNodes('server client');
   # client IPs
   my @cips = ();
@@ -178,9 +183,10 @@ sub setupOrig {
   } else {
     $self->{_is_empty} = 0;
   }
+  my @laddr = $config->listOrigNodes('local-address'); 
   
   $self->{_intf} = $intf;
-  $self->{_local_addr} = $config->returnOrigValue('local-address');
+  $self->{_local_addr} = $laddr[0];
   $self->{_local_host} = $config->returnOrigValue('local-host');
   $self->{_remote_addr} = $config->returnOrigValue('remote-address');
   my @tmp = $config->returnOrigValues('remote-host');
@@ -215,7 +221,10 @@ sub setupOrig {
   if ( $config->existsOrig('disable') ) { $self->{_disable} = 1; }
   $self->{_pam_username} = $config->returnOrigValue('username');
   $self->{_pam_password} = $config->returnOrigValue('password');
-
+  if ( $config->existsOrig('device-type use-tap-device') ) { $self->{_tap_device} = 1; } 
+  if ( $config->existsOrig('local-address') ) { 
+    $self->{_laddr_subnet} = $config->returnOrigValue("local-address $laddr[0] subnet-mask");
+  } 
   my @clients = $config->listOrigNodes('server client');
   # client IPs
   my @cips = ();
@@ -341,6 +350,8 @@ sub isRestartNeeded {
   return 1 if ($this->{_pam_login} ne $that->{_pam_login});
   return 1 if ($this->{_pam_username} ne $that->{_pam_username});
   return 1 if ($this->{_pam_password} ne $that->{_pam_password});
+  return 1 if ($this->{_tap_device} ne $that->{_tap_device});
+  return 1 if ($this->{_laddr_subnet} ne $that->{_laddr_subnet});
   return 0;
 }
 
@@ -391,6 +402,8 @@ sub isDifferentFrom {
   return 1 if ($this->{_pam_login} ne $that->{_pam_login});
   return 1 if ($this->{_pam_username} ne $that->{_pam_username});
   return 1 if ($this->{_pam_password} ne $that->{_pam_password});
+  return 1 if ($this->{_tap_device} ne $that->{_tap_device});
+  return 1 if ($this->{_laddr_subnet} ne $that->{_laddr_subnet});
   return 0;
 }
 
@@ -442,7 +455,7 @@ sub get_command {
  
   # interface
   my $type = 'tun';
-  if ( $self->{_bridge} ) { $type = 'tap'; }
+  if ( $self->{_bridge} || $self->{_tap_device} ) { $type = 'tap'; }
   else { $type = 'tun'; }
   $cmd .= " --dev-type $type --dev $self->{_intf}";
 
@@ -486,7 +499,7 @@ sub get_command {
   return (undef, 'The "topology" option is only valid in server mode')
     if (!$server && defined($self->{_topo}));
 
-  # tunnel addresses (site-to-site only)
+  # tunnel addresses (site-to-site only(with or without 'tap' device))
   if (!$client && !$server && !$self->{_bridge}) {
     return (undef, 'Must specify "local-address"')
       if (!defined($self->{_local_addr}));
@@ -503,8 +516,14 @@ sub get_command {
           if ($rem eq $self->{_remote_addr});
       }
     }
-
-    $cmd .= " --ifconfig $self->{_local_addr} $self->{_remote_addr}";
+    if ($self->{_tap_device}) {
+      return (undef, 'Must specify "subnet-mask" for local-address')
+        if (!($self->{_laddr_subnet}));
+      $cmd .= " --ifconfig $self->{_local_addr} $self->{_laddr_subnet}";
+    }
+    else {
+      $cmd .= " --ifconfig $self->{_local_addr} $self->{_remote_addr}";
+    }
   } else {
     return (undef, 'Cannot specify "local-address" or "remote-address" in '
                    . 'client-server or bridge mode')
@@ -702,6 +721,7 @@ sub get_command {
 
   # "server" subsection
   if ($server) {
+    $cmd .= ' --management /tmp/openvpn-mgmt-intf unix';  
     if (defined($self->{_r_def_route})) {
       if (defined($self->{_r_def_rt_loc})) {
         $cmd .= ' --push "redirect-gateway local" ';
