@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.33) unstable; urgency=low
+
+  * bug fix for :
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Tue, 05 Apr 2011 10:32:42 -0700
+
 vyatta-openvpn (0.2.32) unstable; urgency=low
 
   *  fix for bug # 3603. Added following op-mode commands
