@@ -9,6 +9,7 @@ sbin_SCRIPTS += scripts/vyatta-qos-up
 share_perl5_DATA = lib/Vyatta/OpenVPN/Config.pm
 bin_sudo_users_SCRIPTS = scripts/vyatta-show-ovpn.pl
 bin_sudo_users_SCRIPTS += scripts/vyatta-restart-ovpn.pl
+bin_sudo_users_SCRIPTS += scripts/vyatta-reset-client-ovpn.pl
 
 cpiop = find  . ! -regex '\(.*~\|.*\.bak\|.*\.swp\|.*\#.*\#\)' -print0 | \
   cpio -0pd

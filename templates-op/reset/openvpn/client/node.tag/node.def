@@ -1,0 +1,4 @@
+help: Reset OpenVPN client specified by <Common-Name>
+allowed: echo -n '<Common-Name>';
+run: sudo /opt/vyatta/bin/sudo-users/vyatta-reset-client-ovpn.pl --cn "$4"
+
