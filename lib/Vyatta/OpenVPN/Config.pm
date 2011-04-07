@@ -58,7 +58,8 @@ my %fields = (
   _pam_username  => undef,
   _pam_password  => undef,
   _laddr_subnet	 => undef,
-  _tap_device	 => undef, 
+  _tap_device	 => undef,
+  _client_disable  => [], 
 );
 
 my $iftype = 'interfaces openvpn';
@@ -152,12 +153,21 @@ sub setup {
   # client push routes
   my @croute = ();
   for my $c (@clients) {
-   my @cproute = $config->returnValues("server client $c push-route");
-   if (scalar(@cproute) >0) {
-    push @croute, [ $c, @cproute ];
-   } 
+    my @cproute = $config->returnValues("server client $c push-route");
+    if (scalar(@cproute) >0) {
+      push @croute, [ $c, @cproute ];
+    } 
   } 
   $self->{_client_route} = \@croute;
+  # client connection disable
+  my @cdisable = ();
+  for my $c (@clients) {
+    my $disable = $config->exists("server client $c disable");
+    if ($disable)  {
+      push @cdisable, [ $c, $disable ];
+    } 
+  }
+  $self->{_client_disable} = \@cdisable;
   $self->{_topo} = $config->returnValue('server topology');
   $self->{_proto} = $config->returnValue('protocol');
   $self->{_local_port} = $config->returnValue('local-port');
@@ -247,12 +257,21 @@ sub setupOrig {
   # client push routes
   my @croute = ();
   for my $c (@clients) {
-   my @cproute = $config->returnOrigValues("server client $c push-route");
-   if (scalar(@cproute) >0) {
-    push @croute, [ $c, @cproute ];
-   } 
+    my @cproute = $config->returnOrigValues("server client $c push-route");
+    if (scalar(@cproute) >0) {
+      push @croute, [ $c, @cproute ];
+    } 
   } 
   $self->{_client_route} = \@croute;
+  # client connection disable
+  my @cdisable = ();
+  for my $c (@clients) {
+    my $disable = $config->existsOrig("server client $c disable");
+    if ($disable) {
+      push @cdisable, [ $c, $disable ];
+    }
+  }
+  $self->{_client_disable} = \@cdisable;
 
   $self->{_topo} = $config->returnOrigValue('server topology');
   $self->{_proto} = $config->returnOrigValue('protocol');
@@ -404,6 +423,7 @@ sub isDifferentFrom {
   return 1 if ($this->{_pam_password} ne $that->{_pam_password});
   return 1 if ($this->{_tap_device} ne $that->{_tap_device});
   return 1 if ($this->{_laddr_subnet} ne $that->{_laddr_subnet});
+  return 1 if (pairListsDiff($this->{_client_disable}, $that->{_client_disable}));
   return 0;
 }
 
@@ -767,7 +787,8 @@ sub get_command {
     return (undef, 'Cannot generate per-client configurations') if ($? >> 8);
     if (scalar(@{$self->{_client_ip}}) > 0
         || scalar(@{$self->{_client_subnet}}) > 0
-        || scalar(@{$self->{_client_route}}) > 0) {
+        || scalar(@{$self->{_client_route}}) > 0
+        || scalar(@{$self->{_client_disable}}) > 0) {
       for my $ref (@{$self->{_client_ip}}) {
         my $client = ${$ref}[0];
         my $ip = ${$ref}[1];
@@ -805,6 +826,16 @@ sub get_command {
          my $cn = $cs->addr();
          my $cm = $cs->mask();
          system("echo push \"route $cn $cm\" >> $ccd_dir/$client");
+         return (undef, 'Cannot generate per-client configurations')
+          if ($? >> 8);
+         $i += 1;
+        }
+     }
+     for my $ref (@{$self->{_client_disable}}) {
+        my $client = ${$ref}[0];
+        my $i=1;
+        while (${$ref}[$i]) {
+         system("echo \"disable\" >> $ccd_dir/$client");
          return (undef, 'Cannot generate per-client configurations')
           if ($? >> 8);
          $i += 1;
