@@ -780,6 +780,9 @@ sub get_command {
     my $s = new NetAddr::IP "$self->{_server_subnet}";
     my $n = $s->addr();
     my $m = $s->mask();
+    my $l = $s->masklen();
+    return (undef, 'Must define "server subnet mask" 255.255.255.248 (/29) or lower')
+      if ( $l gt "29" && !defined($self->{_bridge}) && !defined($self->{_tap_device}));
     $cmd .= " --server $n $m";
 
     # per-client config specified. write them out.
