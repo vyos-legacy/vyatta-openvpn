@@ -59,7 +59,8 @@ my %fields = (
   _pam_password  => undef,
   _laddr_subnet	 => undef,
   _tap_device	 => undef,
-  _client_disable  => [], 
+  _client_disable  => [],
+  _dns_suffix	 => undef, 
 );
 
 my $iftype = 'interfaces openvpn';
@@ -131,6 +132,7 @@ sub setup {
   if ( $config->exists('local-address') ) { 
     $self->{_laddr_subnet} = $config->returnValue("local-address $laddr[0] subnet-mask");
   } 
+  $self->{_dns_suffix} = $config->returnValue('server domain-name');
   my @clients = $config->listNodes('server client');
   # client IPs
   my @cips = ();
@@ -235,6 +237,7 @@ sub setupOrig {
   if ( $config->existsOrig('local-address') ) { 
     $self->{_laddr_subnet} = $config->returnOrigValue("local-address $laddr[0] subnet-mask");
   } 
+  $self->{_dns_suffix} = $config->returnOrigValue('server domain-name');
   my @clients = $config->listOrigNodes('server client');
   # client IPs
   my @cips = ();
@@ -371,6 +374,7 @@ sub isRestartNeeded {
   return 1 if ($this->{_pam_password} ne $that->{_pam_password});
   return 1 if ($this->{_tap_device} ne $that->{_tap_device});
   return 1 if ($this->{_laddr_subnet} ne $that->{_laddr_subnet});
+  return 1 if ($this->{_dns_suffix} ne $that->{_dns_suffix});
   return 0;
 }
 
@@ -424,6 +428,7 @@ sub isDifferentFrom {
   return 1 if ($this->{_tap_device} ne $that->{_tap_device});
   return 1 if ($this->{_laddr_subnet} ne $that->{_laddr_subnet});
   return 1 if (pairListsDiff($this->{_client_disable}, $that->{_client_disable}));
+  return 1 if ($this->{_dns_suffix} ne $that->{_dns_suffix});
   return 0;
 }
 
@@ -770,10 +775,14 @@ sub get_command {
    }
   } 
 
+ if (defined ($self->{_dns_suffix})) {
+   $cmd .= " --push dhcp-option DOMAIN $self->{_dns_suffix}"; 
+ }
+ 
  if (defined ($self->{_server_mclients})) {
-    return (undef, 'Maximum client connection cannot be set to 0 or less') 
+   return (undef, 'Maximum client connection cannot be set to 0 or less') 
      if ($self->{_server_mclients} <= 0);
-    $cmd .= " --max-clients $self->{_server_mclients}"; 
+   $cmd .= " --max-clients $self->{_server_mclients}"; 
  }
    return (undef, 'Must specify "server subnet" option in server mode')
       if (!defined($self->{_server_def}));
