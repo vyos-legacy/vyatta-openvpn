@@ -792,8 +792,12 @@ sub get_command {
     my $l = $s->masklen();
     return (undef, 'Must define "server subnet mask" 255.255.255.248 (/29) or lower')
       if ( $l gt "29" && !defined($self->{_bridge}) && !defined($self->{_tap_device}));
-    $cmd .= " --server $n $m";
-
+    if ($self->{_bridge}) {
+      $cmd .= " --server-bridge";
+    } else {
+      $cmd .= " --server $n $m";
+    }
+    
     # per-client config specified. write them out.
     system("mkdir -p $ccd_dir ; rm -f $ccd_dir/*");
     return (undef, 'Cannot generate per-client configurations') if ($? >> 8);
