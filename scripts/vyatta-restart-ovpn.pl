@@ -49,7 +49,9 @@ if ($vtun) {
    unless is_valid_intf($vtun);
 }
 print "This will reset and re-establish all tunnel connections on this interface.\n";
-if (prompt("Are you sure you want to continue? (y/n)", -y1d=>"y")){
+
+if ((defined($ENV{VYATTA_PROCESS_CLIENT}) && $ENV{VYATTA_PROCESS_CLIENT} eq 'gui2_rest') || 
+    prompt("Are you sure you want to continue? (y/n)", -y1d=>"y")){
   $pid = `cat /var/run/openvpn-$vtun.pid`;
    if ($pid) {
       $cmd .= "$pid";
