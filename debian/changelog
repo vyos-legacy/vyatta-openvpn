@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.41) unstable; urgency=low
+
+  * print warning if specified key file is outside of /config
+
+ -- Mohit Mehta <mohit@vyatta.com>  Wed, 04 May 2011 18:39:43 -0700
+
 vyatta-openvpn (0.2.40) unstable; urgency=low
 
   * update command "restart openvpn interface [interface]" to play well
