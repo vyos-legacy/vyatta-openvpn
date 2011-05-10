@@ -1,2 +1,3 @@
+multi:
 type: txt
 help: Additional OpenVPN options

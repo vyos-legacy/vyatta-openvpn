@@ -22,7 +22,7 @@ my %fields = (
   _local_host    => undef,
   _remote_addr   => undef,
   _remote_host   => [],
-  _options       => undef,
+  _options       => [],
   _secret_file   => undef,
   _mode          => undef,
   _server_def    => undef,
@@ -98,7 +98,6 @@ sub setup {
   $self->{_remote_addr} = $config->returnValue('remote-address');
   my @tmp = $config->returnValues('remote-host');
   $self->{_remote_host} = \@tmp;
-  $self->{_options} = $config->returnValue('openvpn-option');
   $self->{_secret_file} = $config->returnValue('shared-secret-key-file');
   $self->{_mode} = $config->returnValue('mode');
   $self->{_server_subnet} = $config->returnValue('server subnet');
@@ -179,6 +178,8 @@ sub setup {
   $self->{_encrypt} = $config->returnValue('encryption');
   $self->{_hash} = $config->returnValue('hash');
   $self->{_qos} = $config->exists('qos-policy');
+  my @options = $config->returnValues('openvpn-option');
+  $self->{_options} = \@options;
 
   return 0;
 }
@@ -203,7 +204,6 @@ sub setupOrig {
   $self->{_remote_addr} = $config->returnOrigValue('remote-address');
   my @tmp = $config->returnOrigValues('remote-host');
   $self->{_remote_host} = \@tmp;
-  $self->{_options} = $config->returnOrigValue('openvpn-option');
   $self->{_secret_file} = $config->returnOrigValue('shared-secret-key-file');
   $self->{_mode} = $config->returnOrigValue('mode');
   $self->{_server_subnet} = $config->returnOrigValue('server subnet');
@@ -285,7 +285,9 @@ sub setupOrig {
   $self->{_encrypt} = $config->returnOrigValue('encryption');
   $self->{_hash} = $config->returnOrigValue('hash');
   $self->{_qos} = $config->returnValue('qos-policy');
-
+  my @options = $config->returnOrigValues('openvpn-option');
+  $self->{_options} = \@options;
+  
   return 0;
 }
 
@@ -375,6 +377,7 @@ sub isRestartNeeded {
   return 1 if ($this->{_tap_device} ne $that->{_tap_device});
   return 1 if ($this->{_laddr_subnet} ne $that->{_laddr_subnet});
   return 1 if ($this->{_dns_suffix} ne $that->{_dns_suffix});
+  return 1 if (listsDiff($this->{_options}, $that->{_options}));
   return 0;
 }
 
@@ -429,6 +432,7 @@ sub isDifferentFrom {
   return 1 if ($this->{_laddr_subnet} ne $that->{_laddr_subnet});
   return 1 if (pairListsDiff($this->{_client_disable}, $that->{_client_disable}));
   return 1 if ($this->{_dns_suffix} ne $that->{_dns_suffix});
+  return 1 if (listsDiff($this->{_options}, $that->{_options}));
   return 0;
 }
 
@@ -874,9 +878,11 @@ sub get_command {
   }
 
   # extra options
-  if (defined($self->{_options})) {
-    $cmd .= " $self->{_options}";
+  if (scalar(@{$self->{_options}}) > 0) {
+  for my $option (@{$self->{_options}}) {
+   $cmd .= " $option";
   }
+ }
 
   return ($cmd, undef);
 }
