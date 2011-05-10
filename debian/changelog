@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.42) unstable; urgency=low
+
+  * bug fix for 6992: "openvpn-option" is now multinode.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Tue, 10 May 2011 15:35:42 -0700
+
 vyatta-openvpn (0.2.41) unstable; urgency=low
 
   * print warning if specified key file is outside of /config
