@@ -1,3 +1,10 @@
+vyatta-openvpn (0.2.43) unstable; urgency=low
+
+  * Moving "restart openvpn interface <vtunN>" to "reset openvpn
+    interface <vtunN>".
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 12 May 2011 06:12:31 -0700
+
 vyatta-openvpn (0.2.42) unstable; urgency=low
 
   * bug fix for 6992: "openvpn-option" is now multinode.
