@@ -1,4 +1,4 @@
-help: Restart OpenVPN process on interface
+help: Reset OpenVPN process on interface
 allowed: local -a array ;
          array=( /sys/class/net/vtun* ) ;
          echo  -n ${array[@]##*/}

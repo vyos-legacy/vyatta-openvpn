@@ -63,5 +63,5 @@ if ((defined($ENV{VYATTA_PROCESS_CLIENT}) && $ENV{VYATTA_PROCESS_CLIENT} eq 'gui
    }
   }
 else{
-  print "Restart cancelled\n";
+  print "Reset cancelled\n";
 }
