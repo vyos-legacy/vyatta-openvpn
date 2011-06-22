@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.44) unstable; urgency=low
+
+  * Added 'nogw' flag for the --server-bridge option, for server-client
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Wed, 22 Jun 2011 10:05:49 -0700
+
 vyatta-openvpn (0.2.43) unstable; urgency=low
 
   * Moving "restart openvpn interface <vtunN>" to "reset openvpn
