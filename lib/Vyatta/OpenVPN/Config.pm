@@ -797,7 +797,7 @@ sub get_command {
     return (undef, 'Must define "server subnet mask" 255.255.255.248 (/29) or lower')
       if ( $l gt "29" && !defined($self->{_bridge}) && !defined($self->{_tap_device}));
     if ($self->{_bridge}) {
-      $cmd .= " --server-bridge";
+      $cmd .= " --server-bridge nogw";
     } else {
       $cmd .= " --server $n $m";
     }
