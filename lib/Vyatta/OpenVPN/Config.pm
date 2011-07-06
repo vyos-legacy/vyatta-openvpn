@@ -10,7 +10,6 @@ use NetAddr::IP;
 
 my $ccd_dir = '/opt/vyatta/etc/openvpn/ccd';
 my $status_dir = '/opt/vyatta/etc/openvpn/status';
-my $upfile_dir = '/opt/vyatta/etc/openvpn/up';
 my $status_itvl = 30;
 my $ping_itvl = 10;
 my $ping_restart = 60;
@@ -54,9 +53,6 @@ my %fields = (
   _push_route    => [],
   _client_route  => [],
   _server_mclients  => undef,
-  _pam_login     => undef,
-  _pam_username  => undef,
-  _pam_password  => undef,
   _laddr_subnet	 => undef,
   _tap_device	 => undef,
   _client_disable  => [],
@@ -80,9 +76,8 @@ sub setup {
   my ($self, $intf) = @_;
   my $config = new Vyatta::Config;
 
-  # set up ccd and up-directory for this interface
+  # set up ccd for this interface
   $ccd_dir = "$ccd_dir/$intf";
-  $upfile_dir = "$upfile_dir/$intf";
   $config->setLevel("$iftype $intf");
   my @nodes = $config->listNodes();
   if (scalar(@nodes) <= 0) {
@@ -123,10 +118,7 @@ sub setup {
   my @proute = $config->returnValues('server push-route');
   $self->{_push_route} = \@proute;
   $self->{_server_mclients} = $config->returnValue('server max-connections');
-  if ( $config->exists('server require-pam-login') ) { $self->{_pam_login} = 1; }
   if ( $config->exists('disable') ) { $self->{_disable} = 1; }
-  $self->{_pam_username} = $config->returnValue('username');
-  $self->{_pam_password} = $config->returnValue('password');
   if ( $config->exists('device-type use-tap-device') ) { $self->{_tap_device} = 1; } 
   if ( $config->exists('local-address') ) { 
     $self->{_laddr_subnet} = $config->returnValue("local-address $laddr[0] subnet-mask");
@@ -229,10 +221,7 @@ sub setupOrig {
   my @proute = $config->returnOrigValues('server push-route');
   $self->{_push_route} = \@proute;
   $self->{_server_mclients} = $config->returnOrigValue('server max-connections');
-  if ( $config->existsOrig('server require-pam-login') ) { $self->{_pam_login} = 1; }
   if ( $config->existsOrig('disable') ) { $self->{_disable} = 1; }
-  $self->{_pam_username} = $config->returnOrigValue('username');
-  $self->{_pam_password} = $config->returnOrigValue('password');
   if ( $config->existsOrig('device-type use-tap-device') ) { $self->{_tap_device} = 1; } 
   if ( $config->existsOrig('local-address') ) { 
     $self->{_laddr_subnet} = $config->returnOrigValue("local-address $laddr[0] subnet-mask");
@@ -371,9 +360,6 @@ sub isRestartNeeded {
   return 1 if (listsDiff($this->{_name_server}, $that->{_name_server}));
   return 1 if (listsDiff($this->{_push_route}, $that->{_push_route}));
   return 1 if ($this->{_server_mclients} ne $that->{_server_mclients});
-  return 1 if ($this->{_pam_login} ne $that->{_pam_login});
-  return 1 if ($this->{_pam_username} ne $that->{_pam_username});
-  return 1 if ($this->{_pam_password} ne $that->{_pam_password});
   return 1 if ($this->{_tap_device} ne $that->{_tap_device});
   return 1 if ($this->{_laddr_subnet} ne $that->{_laddr_subnet});
   return 1 if ($this->{_dns_suffix} ne $that->{_dns_suffix});
@@ -425,9 +411,6 @@ sub isDifferentFrom {
   return 1 if (listsDiff($this->{_push_route}, $that->{_push_route}));
   return 1 if (doublePairDiff($this->{_client_route}, $that->{_client_route}));
   return 1 if ($this->{_server_mclients} ne $that->{_server_mclients});
-  return 1 if ($this->{_pam_login} ne $that->{_pam_login});
-  return 1 if ($this->{_pam_username} ne $that->{_pam_username});
-  return 1 if ($this->{_pam_password} ne $that->{_pam_password});
   return 1 if ($this->{_tap_device} ne $that->{_tap_device});
   return 1 if ($this->{_laddr_subnet} ne $that->{_laddr_subnet});
   return 1 if (pairListsDiff($this->{_client_disable}, $that->{_client_disable}));
@@ -472,11 +455,6 @@ sub checkHeader {
 sub get_command {
   my ($self) = @_;
   my $cmd = "/usr/sbin/openvpn --daemon --verb 3 --writepid /var/run/openvpn-$self->{_intf}.pid";
-  if ($self->{_pam_login}) {
-     return (undef, 'Can specify "require-pam-login" in server mode only')
-      if ($self->{_mode} ne 'server');
-     $cmd .= " --plugin /usr/lib/openvpn/openvpn-auth-pam.so login";
-  } 
   if ( $self->{_disable} ) { return ('disable', undef); }
 
   # status
@@ -730,22 +708,6 @@ sub get_command {
     return (undef, $err) if (scalar(@hdrs) != 1);
     # we can further validate the secret file
     $cmd .= " --secret $self->{_secret_file}";
-  }
-
-  # username & password for pam authentication
-  if (defined($self->{_pam_username}) && defined($self->{_pam_password})) {
-    return (undef, 'Can specify "username/password" in client mode only')
-      if ($self->{_mode} ne 'client');
-    system("mkdir -p $upfile_dir ; rm -f $upfile_dir/*");
-      return (undef, 'Cannot generate username/password file for authentication') if ($? >> 8);
-    system("echo \"$self->{_pam_username}\n$self->{_pam_password}\" >> $upfile_dir/up");
-      return (undef, 'Cannot generate username/password file')
-      if ($? >> 8);
-    
-   $cmd .= " --auth-user-pass $upfile_dir/up";
-  }
-  elsif (defined($self->{_pam_username}) || defined($self->{_pam_password})) {
-   return (undef, 'Need to specify username/password pair');
   }
 
   # "server" subsection
