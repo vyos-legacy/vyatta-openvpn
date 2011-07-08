@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.46) unstable; urgency=low
+
+  * new branch
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 07 Jul 2011 20:57:50 -0700
+
 vyatta-openvpn (0.2.45) unstable; urgency=low
 
   * Revert fix for bug 3860 - two factor authentication.
