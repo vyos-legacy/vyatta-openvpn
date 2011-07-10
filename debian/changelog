@@ -1,3 +1,10 @@
+vyatta-openvpn (0.2.45+napa2) unstable; urgency=low
+
+  * Changed the syntax of op-mode status commands. following are new
+    commands
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Sun, 10 Jul 2011 03:21:12 -0700
+
 vyatta-openvpn (0.2.45+napa1) unstable; urgency=low
 
   * new branch
