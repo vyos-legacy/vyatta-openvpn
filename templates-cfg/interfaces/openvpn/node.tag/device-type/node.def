@@ -1,1 +1,5 @@
-help: Option for enabling 'tap' device-type 
+type: txt
+help: OpenVPN interface device-type 
+syntax:expression: $VAR(@) in "tap";
+                   "Must be \"tap\""
+val_help: tap; Option for enabling 'tap' device-type 

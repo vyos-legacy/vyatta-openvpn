@@ -54,7 +54,7 @@ my %fields = (
   _client_route  => [],
   _server_mclients  => undef,
   _laddr_subnet	 => undef,
-  _tap_device	 => undef,
+  _device_type	 => undef,
   _client_disable  => [],
   _dns_suffix	 => undef, 
 );
@@ -119,7 +119,7 @@ sub setup {
   $self->{_push_route} = \@proute;
   $self->{_server_mclients} = $config->returnValue('server max-connections');
   if ( $config->exists('disable') ) { $self->{_disable} = 1; }
-  if ( $config->exists('device-type use-tap-device') ) { $self->{_tap_device} = 1; } 
+  $self->{_device_type} = $config->returnValue('device-type'); 
   if ( $config->exists('local-address') ) { 
     $self->{_laddr_subnet} = $config->returnValue("local-address $laddr[0] subnet-mask");
   } 
@@ -222,7 +222,7 @@ sub setupOrig {
   $self->{_push_route} = \@proute;
   $self->{_server_mclients} = $config->returnOrigValue('server max-connections');
   if ( $config->existsOrig('disable') ) { $self->{_disable} = 1; }
-  if ( $config->existsOrig('device-type use-tap-device') ) { $self->{_tap_device} = 1; } 
+  $self->{_device_type} = $config->returnOrigValue('device-type'); 
   if ( $config->existsOrig('local-address') ) { 
     $self->{_laddr_subnet} = $config->returnOrigValue("local-address $laddr[0] subnet-mask");
   } 
@@ -360,7 +360,7 @@ sub isRestartNeeded {
   return 1 if (listsDiff($this->{_name_server}, $that->{_name_server}));
   return 1 if (listsDiff($this->{_push_route}, $that->{_push_route}));
   return 1 if ($this->{_server_mclients} ne $that->{_server_mclients});
-  return 1 if ($this->{_tap_device} ne $that->{_tap_device});
+  return 1 if ($this->{_device_type} ne $that->{_device_type}); 
   return 1 if ($this->{_laddr_subnet} ne $that->{_laddr_subnet});
   return 1 if ($this->{_dns_suffix} ne $that->{_dns_suffix});
   return 1 if (listsDiff($this->{_options}, $that->{_options}));
@@ -411,7 +411,7 @@ sub isDifferentFrom {
   return 1 if (listsDiff($this->{_push_route}, $that->{_push_route}));
   return 1 if (doublePairDiff($this->{_client_route}, $that->{_client_route}));
   return 1 if ($this->{_server_mclients} ne $that->{_server_mclients});
-  return 1 if ($this->{_tap_device} ne $that->{_tap_device});
+  return 1 if ($this->{_device_type} ne $that->{_device_type}); 
   return 1 if ($this->{_laddr_subnet} ne $that->{_laddr_subnet});
   return 1 if (pairListsDiff($this->{_client_disable}, $that->{_client_disable}));
   return 1 if ($this->{_dns_suffix} ne $that->{_dns_suffix});
@@ -462,7 +462,7 @@ sub get_command {
  
   # interface
   my $type = 'tun';
-  if ( $self->{_bridge} || $self->{_tap_device} ) { $type = 'tap'; }
+  if ( $self->{_bridge} || $self->{_device_type} ) { $type = 'tap'; }
   else { $type = 'tun'; }
   $cmd .= " --dev-type $type --dev $self->{_intf}";
 
@@ -523,7 +523,7 @@ sub get_command {
           if ($rem eq $self->{_remote_addr});
       }
     }
-    if ($self->{_tap_device}) {
+    if ($self->{_device_type}) {
       return (undef, 'Must specify "subnet-mask" for local-address')
         if (!($self->{_laddr_subnet}));
       $cmd .= " --ifconfig $self->{_local_addr} $self->{_laddr_subnet}";
@@ -757,7 +757,7 @@ sub get_command {
     my $m = $s->mask();
     my $l = $s->masklen();
     return (undef, 'Must define "server subnet mask" 255.255.255.248 (/29) or lower')
-      if ( $l gt "29" && !defined($self->{_bridge}) && !defined($self->{_tap_device}));
+      if ( $l gt "29" && !defined($self->{_bridge}) && !defined($self->{_device_type}));
     if ($self->{_bridge}) {
       $cmd .= " --server-bridge nogw";
     } else {
