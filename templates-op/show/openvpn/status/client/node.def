@@ -1,2 +1,2 @@
-help: Show status of tunnels for OpenVPN client 
+help: Show tunnel status for OpenVPN client
 run: sudo ${vyatta_bindir}/sudo-users/vyatta-show-ovpn.pl --mode=client
