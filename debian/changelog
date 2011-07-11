@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.45+napa4) unstable; urgency=low
+
+  * bug fix for 7235 - auto-populate client names in completion
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Mon, 11 Jul 2011 06:18:55 -0700
+
 vyatta-openvpn (0.2.45+napa3) unstable; urgency=low
 
   * Fixed bug 4923 - changed device-type use-tap device to device-type
