@@ -51,6 +51,7 @@ sub reset_client {
   print $socket "kill $cn\n";
   chomp( $line = <$socket> );
   if ($line =~ /SUCCESS/) {
+    print "Client with command-name '$cn' has been reset.\n";
     return 0;
   } 
   elsif ($line =~ /ERROR/) { 

@@ -14,8 +14,13 @@ my %mode_hash = (
 
 ##main
 my $mode;
-GetOptions("mode=s" => \$mode);
+my $client;
+
+GetOptions("mode=s" => \$mode,
+           "show=s" => \$client);
+
 my $STATUS_PATH = '/opt/vyatta/etc/openvpn/status';
+show_client_names($client)            if ($client);
 
 if (!opendir(SDIR, "$STATUS_PATH")) {
   print STDERR "Cannot get status information\n";
@@ -131,6 +136,53 @@ sub parse_status {
      push (@values, $rsite, $rtunnel); 
    }
    return @values;
+}
+
+sub parse_common_name  {
+  my $intf = shift;
+  my @lines = @_;
+  my @clients = ();
+  my @cn;
+  my $i = 3;
+  while (!($lines[$i] =~ /^ROUTING TABLE$/)) {
+    push @clients, $lines[$i];
+    $i++;
+  }
+  for (@clients) {
+    my ($name, $rip_str, $recv, $sent, $since) = split /,/;
+    push @cn, $name;
+  }
+  print join(' ', @cn), "\n";
+}
+
+# generate one line with all client CN's for allowed
+sub show_client_names {
+  my $mode = "server";
+  my $client = shift;
+  if (!opendir(SDIR, "$STATUS_PATH")) {
+    exit 1;
+  }
+  my @vtuns = grep { /\.status$/ } readdir(SDIR);
+  closedir(SDIR);
+  if ((scalar @vtuns) <= 0) {
+    exit 1;
+  }
+  my $config = new Vyatta::Config;
+  foreach my $vtun (@vtuns) {
+    $vtun =~ /^(.*)\.status$/;
+    my $intf = $1;
+    $config->setLevel("interfaces openvpn $intf");
+    my $modeVal = $config->returnOrigValue("mode");
+    if ($mode eq $modeVal) {
+    if (!open(VT, "$STATUS_PATH/$vtun")) {
+      next;
+    }
+    my @slines = <VT>;
+    close VT;
+    parse_common_name($intf, @slines);
+    }
+  }
+  exit 0;
 }
 
 sub output_client_status {
