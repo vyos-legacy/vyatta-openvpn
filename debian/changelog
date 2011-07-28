@@ -1,3 +1,10 @@
+vyatta-openvpn (0.2.48) unstable; urgency=low
+
+  * bug fix - 7387 - remove openvpn interface from bridge group on
+    commit failure.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 28 Jul 2011 06:28:01 -0700
+
 vyatta-openvpn (0.2.47) unstable; urgency=low
 
   * Changed the syntax of op-mode status commands. following are new
