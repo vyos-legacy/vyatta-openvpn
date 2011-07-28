@@ -508,7 +508,7 @@ sub get_command {
 
   # tunnel addresses (site-to-site only(with or without 'tap' device))
   if (!$client && !$server && !$self->{_bridge}) {
-    return (undef, 'Must specify "local-address"')
+    return (undef, 'Must specify "local-address" or "bridge-group"')
       if (!defined($self->{_local_addr}));
     return (undef, 'Must specify "remote-address"')
       if (!defined($self->{_remote_addr}));
