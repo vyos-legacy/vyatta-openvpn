@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.49) unstable; urgency=low
+
+  * bug fix - 7385 - Change the help text for commit failed.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 28 Jul 2011 06:58:22 -0700
+
 vyatta-openvpn (0.2.48) unstable; urgency=low
 
   * bug fix - 7387 - remove openvpn interface from bridge group on
