@@ -55,6 +55,8 @@ my $description = $config->{_description};
 
 if (defined($err)) {
   print STDERR "OpenVPN configuration error: $err.\n";
+  # remove the openvpn interface from bridge group on commit failure.
+  $config->removeBridge(); 
   exit 1;
 }
 
