@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.50) unstable; urgency=low
+
+  * fix Qos for openvpn
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Tue, 02 Aug 2011 07:07:20 -0700
+
 vyatta-openvpn (0.2.49) unstable; urgency=low
 
   * bug fix - 7385 - Change the help text for commit failed.
