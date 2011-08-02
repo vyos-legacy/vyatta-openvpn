@@ -169,7 +169,7 @@ sub setup {
   $self->{_r_def_rt_loc} = $config->exists('replace-default-route local');
   $self->{_encrypt} = $config->returnValue('encryption');
   $self->{_hash} = $config->returnValue('hash');
-  $self->{_qos} = $config->exists('qos-policy');
+  $self->{_qos} = $config->exists('traffic-policy');
   my @options = $config->returnValues('openvpn-option');
   $self->{_options} = \@options;
 
@@ -273,7 +273,7 @@ sub setupOrig {
   $self->{_r_def_rt_loc} = $config->existsOrig('replace-default-route local');
   $self->{_encrypt} = $config->returnOrigValue('encryption');
   $self->{_hash} = $config->returnOrigValue('hash');
-  $self->{_qos} = $config->returnValue('qos-policy');
+  $self->{_qos} = $config->existsOrig('traffic-policy');
   my @options = $config->returnOrigValues('openvpn-option');
   $self->{_options} = \@options;
   
@@ -603,7 +603,7 @@ sub get_command {
   # site-to-site: if remote host not defined, no "--remote" (same as "--float")
 
   # qos
-  $cmd .= " --up /opt/vyatta/sbin/vyatta-qos-up" if ($self->{_qos});
+  $cmd .= " --up /opt/vyatta/sbin/vyatta-qos-up --script-security 2" if ($self->{_qos});
 
   # encryption
   if (defined($self->{_encrypt})) {
