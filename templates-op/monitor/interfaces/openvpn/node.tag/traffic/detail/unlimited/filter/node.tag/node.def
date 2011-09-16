@@ -1,0 +1,2 @@
+help: Monitor detailed filtered traffic for the specified openvpn interface
+run: ${vyatta_bindir}/vyatta-tshark.pl --intf $4 --detail --unlimited --filter "${@:9}"
