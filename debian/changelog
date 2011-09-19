@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.51) unstable; urgency=low
+
+  * Removed reduntant code.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Mon, 19 Sep 2011 06:28:54 -0700
+
 vyatta-openvpn (0.2.50) unstable; urgency=low
 
   * fix Qos for openvpn
