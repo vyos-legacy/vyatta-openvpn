@@ -1,3 +1,2 @@
 help: Monitor specified openvpn interface
 allowed: ${vyatta_sbindir}/vyatta-interfaces.pl --show openvpn
-run: ${vyatta_bindir}/vyatta-show-interfaces.pl --intf=""
