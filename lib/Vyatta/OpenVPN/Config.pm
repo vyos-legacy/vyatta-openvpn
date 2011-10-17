@@ -454,7 +454,7 @@ sub checkHeader {
 
 sub get_command {
   my ($self) = @_;
-  my $cmd = "/usr/sbin/openvpn --daemon --verb 3 --writepid /var/run/openvpn-$self->{_intf}.pid";
+  my $cmd = "/usr/sbin/openvpn --daemon openvpn-$self->{_intf} --verb 3 --writepid /var/run/openvpn-$self->{_intf}.pid";
   if ( $self->{_disable} ) { return ('disable', undef); }
 
   # status
