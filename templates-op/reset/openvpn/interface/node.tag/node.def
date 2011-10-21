@@ -1,5 +1,5 @@
 help: Reset OpenVPN process on interface
 allowed: local -a array ;
          array=( /sys/class/net/vtun* ) ;
-         echo  -n ${array[@]##*/}
+         echo  -n "<vtunX>" ${array[@]##*/}
 run: sudo /opt/vyatta/bin/sudo-users/vyatta-restart-ovpn.pl --vtun "$4" 
