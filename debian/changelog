@@ -1,3 +1,15 @@
+vyatta-openvpn (0.2.53) unstable; urgency=low
+
+  * Add monitor for openvpn interfaces
+  * Remove capture from show for openvpn interfaces
+  * Add missiing node.def to monitor openvpn
+  * Fix filter completion
+  * remove run from 'montior interface openvpn [name]' command
+  * Bugfix 7572: Make help text non-completion more helpful for 'reset
+    openvpn interface'
+
+ -- John Southworth <john.southworth@vyatta.com>  Thu, 27 Oct 2011 17:48:20 -0500
+
 vyatta-openvpn (0.2.52) unstable; urgency=low
 
   * fix for bug 7561 - tag openvpn log messages with interface name.
