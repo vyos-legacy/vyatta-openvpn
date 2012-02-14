@@ -840,7 +840,11 @@ sub get_command {
   # extra options
   if (scalar(@{$self->{_options}}) > 0) {
   for my $option (@{$self->{_options}}) {
-   $cmd .= " $option";
+    if ($option =~ /^--/) { 
+      $cmd .= " $option";
+    } else {
+      $cmd .= " --$option";
+    }
   }
  }
 
