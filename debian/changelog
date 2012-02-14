@@ -1,3 +1,11 @@
+vyatta-openvpn (0.2.54) unstable; urgency=low
+
+  * fix for bug 7563 - Move 'generate vpn openvpn-key' to 'generate
+    openvpn'
+  * fix for bug 7194 - openvpn-option should no longer require the
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Tue, 14 Feb 2012 07:40:51 -0800
+
 vyatta-openvpn (0.2.53) unstable; urgency=low
 
   * Add monitor for openvpn interfaces
