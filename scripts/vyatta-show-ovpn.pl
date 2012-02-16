@@ -64,7 +64,7 @@ Client CN       Remote IP       Tunnel IP       TX byte RX byte Connected Since
 EOH
 
   my @clients = ();
-  my @routes = ();
+  my %routes = ();
   my $i = 3;
   while (!($lines[$i] =~ /^ROUTING TABLE$/)) {
     push @clients, $lines[$i];
@@ -72,23 +72,21 @@ EOH
   }
   $i++;
   while (!($lines[$i] =~ /^GLOBAL STATS$/)) {
-    push @routes, $lines[$i];
+    my ($tip, $rip) = (split /,/, $lines[$i])[0,2];
+    $routes{$rip} = $tip; 
     $i++;
   }
 
   for (@clients) {
     my ($name, $rip_str, $recv, $sent, $since) = split /,/;
     chomp $since;
-    my @croutes = grep { /^[0-9.]+,$name,/ } @routes;
-    $croutes[0] =~ /^([^,]+),/;
-    my $tip = $1;
-    $rip_str =~ /^([^:]+):/;
-    my $rip = $1;
+    my $tip_str = $routes{$rip_str}; 
+    my $rip = (split /:/, $rip_str)[0];
     my $rbytes = stat2str($recv);
     my $sbytes = stat2str($sent);
 
     printf "%-15s %-15s %-15s %7s %7s %s\n",
-           $name, $rip, $tip, $sbytes, $rbytes, $since;
+           $name, $rip, $tip_str, $sbytes, $rbytes, $since;
   }
 
   print "\n\n";
