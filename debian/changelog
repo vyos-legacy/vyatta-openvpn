@@ -1,3 +1,10 @@
+vyatta-openvpn (0.2.55) unstable; urgency=low
+
+  * bug fix for 6685 - vyatta-show-ovpn shows wrong tunnel IP when more
+    than
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 16 Feb 2012 05:34:52 -0800
+
 vyatta-openvpn (0.2.54) unstable; urgency=low
 
   * fix for bug 7563 - Move 'generate vpn openvpn-key' to 'generate
