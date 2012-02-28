@@ -170,6 +170,10 @@ sub setup {
   $self->{_encrypt} = $config->returnValue('encryption');
   $self->{_hash} = $config->returnValue('hash');
   $self->{_qos} = $config->exists('traffic-policy');
+  $self->{_qos_out} = $config->returnValue('traffic-policy out');
+  $self->{_qos_in} = $config->returnValue('traffic-policy in');
+  $self->{_redirect} = $config->returnValue('redirect');
+
   my @options = $config->returnValues('openvpn-option');
   $self->{_options} = \@options;
 
@@ -273,7 +277,9 @@ sub setupOrig {
   $self->{_r_def_rt_loc} = $config->existsOrig('replace-default-route local');
   $self->{_encrypt} = $config->returnOrigValue('encryption');
   $self->{_hash} = $config->returnOrigValue('hash');
-  $self->{_qos} = $config->existsOrig('traffic-policy');
+  $self->{_qos_out} = $config->returnOrigValue('traffic-policy out');
+  $self->{_qos_in} = $config->returnOrigValue('traffic-policy in');
+  $self->{_redirect} = $config->returnOrigValue('redirect');
   my @options = $config->returnOrigValues('openvpn-option');
   $self->{_options} = \@options;
   
@@ -352,7 +358,9 @@ sub isRestartNeeded {
   return 1 if ($this->{_r_def_rt_loc} ne $that->{_r_def_rt_loc});
   return 1 if ($this->{_encrypt} ne $that->{_encrypt});
   return 1 if ($this->{_hash} ne $that->{_hash});
-  return 1 if ($this->{_qos} ne $that->{_qos});
+  return 1 if ($this->{_qos_out} ne $that->{_qos_out});
+  return 1 if ($this->{_qos_in} ne $that->{_qos_in});
+  return 1 if ($this->{_redirect} ne $that->{_redirect});
   return 1 if ($this->{_bridge} ne $that->{_bridge});
   return 1 if ($this->{_bridgecost} ne $that->{_bridgecost});
   return 1 if ($this->{_bridgeprio} ne $that->{_bridgeprio});
@@ -401,7 +409,9 @@ sub isDifferentFrom {
   return 1 if ($this->{_r_def_rt_loc} ne $that->{_r_def_rt_loc});
   return 1 if ($this->{_encrypt} ne $that->{_encrypt});
   return 1 if ($this->{_hash} ne $that->{_hash});
-  return 1 if ($this->{_qos} ne $that->{_qos});
+  return 1 if ($this->{_qos_out} ne $that->{_qos_out});
+  return 1 if ($this->{_qos_in} ne $that->{_qos_in});
+  return 1 if ($this->{_redirect} ne $that->{_redirect});
   return 1 if ($this->{_bridge} ne $that->{_bridge});
   return 1 if ($this->{_bridgecost} ne $that->{_bridgecost});
   return 1 if ($this->{_bridgeprio} ne $that->{_bridgeprio});
@@ -603,7 +613,12 @@ sub get_command {
   # site-to-site: if remote host not defined, no "--remote" (same as "--float")
 
   # qos
-  $cmd .= " --up /opt/vyatta/sbin/vyatta-qos-up --script-security 2" if ($self->{_qos});
+  if ($self->{_qos_out} || $self->{_qos_out} || $self->{_redirect}) {
+    my $qos_out = defined($self->{_qos_out}) ? $self->{_qos_out} : "__undef";
+    my $qos_in = defined($self->{_qos_in}) ? $self->{_qos_in} : "__undef";
+    my $redirect = defined($self->{_redirect}) ? $self->{_redirect} : "__undef";
+    $cmd .= " --up '/opt/vyatta/sbin/vyatta-qos-up $self->{_intf} $qos_out $qos_in $redirect' --script-security 2" ;
+  }
 
   # encryption
   if (defined($self->{_encrypt})) {

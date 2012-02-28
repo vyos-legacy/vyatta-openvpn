@@ -1,2 +1,30 @@
 #!/bin/sh
-exec /opt/vyatta/sbin/vyatta-qos.pl --start-interface $1
+IF=$1
+OUT=$2
+IN=$3
+REDIR=$4
+function run_script () {
+  if [[ $IN != "__undef" ]]; then
+    /opt/vyatta/sbin/vyatta-qos.pl --start-openvpn-interface $IF 'in' $IN
+  elif [[ $REDIR != "__undef" ]]; then
+    /opt/vyatta/sbin/vyatta-qos.pl --update-openvpn-action $IF 'redir' $REDIR
+  fi
+  if [[ $OUT != "__undef" ]]; then
+    /opt/vyatta/sbin/vyatta-qos.pl --start-openvpn-interface $IF 'out' $OUT
+  fi
+}
+if [[ $REDIR != "__undef" && $IN != "__undef" ]]; then
+  echo "interface $IF: comination of $REDIR and traffic-policy $IN not supported"
+  exit 1
+fi
+if ! cli-shell-api inSession; then
+  logger "in qos-up script $@"
+  API=/bin/cli-shell-api
+  session_env=$($API getSessionEnv $PPID)
+  eval $session_env
+  $API setupSession
+  run_script $@
+  $API teardownSession
+else
+  run_script $@
+fi
