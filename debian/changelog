@@ -1,3 +1,10 @@
+vyatta-openvpn (0.2.57) unstable; urgency=low
+
+  * bug fix 7798 - fix the syntax for openvpn op-mode show openvpn
+    commands
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 01 Mar 2012 07:23:49 -0800
+
 vyatta-openvpn (0.2.56) unstable; urgency=low
 
   * Bugfix 7649 Openvpn
