@@ -448,13 +448,14 @@ my %hash_cmd_hash = (
 
 sub checkHeader {
  my ($header, $file) = @_; 
- my @hdrs; 
- if (! -r $file || !open(FP, "<", $file)){
+ my @hdrs;
+ my $FP = undef; 
+ if (! -r $file || !open($FP, "<", $file)){
   return 1;
  }
  else { 
-   @hdrs = grep { /^$header$/ } <FP>;
-   close(FP);
+   @hdrs = grep { /^$header$/ } <$FP>;
+   close($FP);
    if (scalar(@hdrs) == 1) 
    { return 0; } 
    else
