@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.59+pacifica2) unstable; urgency=low
+
+  * new branch
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 12 Oct 2012 18:49:13 -0700
+
 vyatta-openvpn (0.2.59+pacifica1) unstable; urgency=low
 
   * new branch
