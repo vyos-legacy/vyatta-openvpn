@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.60) unstable; urgency=low
+
+  * new branch
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 12 Oct 2012 19:47:46 -0700
+
 vyatta-openvpn (0.2.59) unstable; urgency=low
 
   * bug 6893- fix for perl critic warnings
