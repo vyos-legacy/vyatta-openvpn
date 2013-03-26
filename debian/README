@@ -1,0 +1,8 @@
+The Debian Package vyatta-openvpn
+---------------------------------
+
+This package has the Vyatta configuration/operational templates and scripts
+for the OpenVPN feature.
+
+ -- An-Cheng Huang <ancheng@vyatta.com> Thu, 10 Jul 2008
+

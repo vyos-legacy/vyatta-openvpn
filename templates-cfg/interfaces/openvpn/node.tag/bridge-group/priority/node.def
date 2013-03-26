@@ -1,0 +1,4 @@
+type: u32
+help: Path priority for this port
+val_help: u32:0-255; Path priority for this port
+commit:expression: $VAR(../bridge/@) != ""; "interface must first be assigned to a bridge"

@@ -1,0 +1,11 @@
+help: Generate OpenVPN shared-secret key with specified file name
+run:
+     result=1;
+     echo "Generating OpenVPN key to $4" 
+     sudo /usr/sbin/openvpn --genkey --secret "$4"
+     result=$?
+     if [ $result = 0 ]; then
+       echo "Your new local OpenVPN key has been generated"
+     fi
+     /opt/vyatta/sbin/check_file_in_config_dir "$4" '/config/auth'
+allowed: echo -n '<filename>'

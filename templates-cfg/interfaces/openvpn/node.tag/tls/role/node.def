@@ -1,0 +1,6 @@
+type: txt
+help: Role in TLS negotiation
+syntax:expression: $VAR(@) in "active", "passive";
+                   "Must be \"active\" or \"passive\""
+val_help: active; Initiate TLS negotiation actively
+val_help: passive; Waiting for TLS connections passively

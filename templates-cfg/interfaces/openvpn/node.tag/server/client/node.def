@@ -1,0 +1,4 @@
+tag:
+type: txt
+help: Client-specific settings
+val_help: <name>; Client common-name in the certificate

@@ -1,0 +1,471 @@
+vyatta-openvpn (0.2.60+daisy1) unstable; urgency=low
+
+  * create daisy branch
+
+ -- John Southworth <john.southworth@vyatta.com>  Sat, 13 Oct 2012 13:31:18 -0700
+
+vyatta-openvpn (0.2.60) unstable; urgency=low
+
+  * new branch
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 12 Oct 2012 19:47:46 -0700
+
+vyatta-openvpn (0.2.59) unstable; urgency=low
+
+  * bug 6893- fix for perl critic warnings
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Tue, 10 Apr 2012 09:07:48 -0700
+
+vyatta-openvpn (0.2.58) unstable; urgency=low
+
+  * new branch
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Sat, 03 Mar 2012 02:26:12 -0800
+
+vyatta-openvpn (0.2.57) unstable; urgency=low
+
+  * bug fix 7798 - fix the syntax for openvpn op-mode show openvpn
+    commands
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 01 Mar 2012 07:23:49 -0800
+
+vyatta-openvpn (0.2.56) unstable; urgency=low
+
+  * Bugfix 7649 Openvpn
+
+ -- John Southworth <john.southworth@vyatta.com>  Tue, 28 Feb 2012 15:15:41 -0800
+
+vyatta-openvpn (0.2.55) unstable; urgency=low
+
+  * bug fix for 6685 - vyatta-show-ovpn shows wrong tunnel IP when more
+    than
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 16 Feb 2012 05:34:52 -0800
+
+vyatta-openvpn (0.2.54) unstable; urgency=low
+
+  * fix for bug 7563 - Move 'generate vpn openvpn-key' to 'generate
+    openvpn'
+  * fix for bug 7194 - openvpn-option should no longer require the
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Tue, 14 Feb 2012 07:40:51 -0800
+
+vyatta-openvpn (0.2.53) unstable; urgency=low
+
+  * Add monitor for openvpn interfaces
+  * Remove capture from show for openvpn interfaces
+  * Add missiing node.def to monitor openvpn
+  * Fix filter completion
+  * remove run from 'montior interface openvpn [name]' command
+  * Bugfix 7572: Make help text non-completion more helpful for 'reset
+    openvpn interface'
+
+ -- John Southworth <john.southworth@vyatta.com>  Thu, 27 Oct 2011 17:48:20 -0500
+
+vyatta-openvpn (0.2.52) unstable; urgency=low
+
+  * fix for bug 7561 - tag openvpn log messages with interface name.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Mon, 17 Oct 2011 03:25:55 -0700
+
+vyatta-openvpn (0.2.51) unstable; urgency=low
+
+  * Removed reduntant code.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Mon, 19 Sep 2011 06:28:54 -0700
+
+vyatta-openvpn (0.2.50) unstable; urgency=low
+
+  * fix Qos for openvpn
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Tue, 02 Aug 2011 07:07:20 -0700
+
+vyatta-openvpn (0.2.49) unstable; urgency=low
+
+  * bug fix - 7385 - Change the help text for commit failed.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 28 Jul 2011 06:58:22 -0700
+
+vyatta-openvpn (0.2.48) unstable; urgency=low
+
+  * bug fix - 7387 - remove openvpn interface from bridge group on
+    commit failure.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 28 Jul 2011 06:28:01 -0700
+
+vyatta-openvpn (0.2.47) unstable; urgency=low
+
+  * Changed the syntax of op-mode status commands. following are new
+    commands
+  * Fixed bug 4923 - changed device-type use-tap device to device-type
+    tap.
+  * bug fix for 7235 - auto-populate client names in completion
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 28 Jul 2011 05:28:05 -0700
+
+vyatta-openvpn (0.2.46) unstable; urgency=low
+
+  * new branch
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 07 Jul 2011 20:57:50 -0700
+
+vyatta-openvpn (0.2.45) unstable; urgency=low
+
+  * Revert fix for bug 3860 - two factor authentication.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Wed, 06 Jul 2011 04:17:06 -0700
+
+vyatta-openvpn (0.2.44) unstable; urgency=low
+
+  * Added 'nogw' flag for the --server-bridge option, for server-client
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Wed, 22 Jun 2011 10:05:49 -0700
+
+vyatta-openvpn (0.2.43) unstable; urgency=low
+
+  * Moving "restart openvpn interface <vtunN>" to "reset openvpn
+    interface <vtunN>".
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 12 May 2011 06:12:31 -0700
+
+vyatta-openvpn (0.2.42) unstable; urgency=low
+
+  * bug fix for 6992: "openvpn-option" is now multinode.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Tue, 10 May 2011 15:35:42 -0700
+
+vyatta-openvpn (0.2.41) unstable; urgency=low
+
+  * print warning if specified key file is outside of /config
+
+ -- Mohit Mehta <mohit@vyatta.com>  Wed, 04 May 2011 18:39:43 -0700
+
+vyatta-openvpn (0.2.40) unstable; urgency=low
+
+  * update command "restart openvpn interface [interface]" to play well
+    with rest api (i.e. suppress "are you sure check").
+
+ -- Michael Larson <mike@vyatta.com>  Wed, 04 May 2011 15:34:48 -0700
+
+vyatta-openvpn (0.2.39) unstable; urgency=low
+
+  * Added bridging for OpenVPN in client-server mode.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 28 Apr 2011 13:22:35 -0700
+
+vyatta-openvpn (0.2.38) unstable; urgency=low
+
+  * * Add help and checks for OpenVPN auth nodes to push
+
+ -- Mohit Mehta <mohit@vyatta.com>  Wed, 13 Apr 2011 18:11:39 -0700
+
+vyatta-openvpn (0.2.37) unstable; urgency=low
+
+  * bug fix for -
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Wed, 13 Apr 2011 12:27:23 -0700
+
+vyatta-openvpn (0.2.36) unstable; urgency=low
+
+  * bug fix for -
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Mon, 11 Apr 2011 18:54:30 -0700
+
+vyatta-openvpn (0.2.35) unstable; urgency=low
+
+  * bug fix for:
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Mon, 11 Apr 2011 15:18:33 -0700
+
+vyatta-openvpn (0.2.34) unstable; urgency=low
+
+  * fix for bug:
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 07 Apr 2011 12:34:02 -0700
+
+vyatta-openvpn (0.2.33) unstable; urgency=low
+
+  * bug fix for :
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Tue, 05 Apr 2011 10:32:42 -0700
+
+vyatta-openvpn (0.2.32) unstable; urgency=low
+
+  *  fix for bug # 3603. Added following op-mode commands
+  * fix for bug # 4923 - setting openvpn as 'tap' device for
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Wed, 09 Mar 2011 17:39:03 -0800
+
+vyatta-openvpn (0.2.31) unstable; urgency=low
+
+  * Bugfix 2837: Change vpn openvpn-key generate to generate vpn
+    openvpn-key to be more consistent with the rest of the system
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 21 Jan 2011 18:56:52 -0600
+
+vyatta-openvpn (0.2.30) unstable; urgency=low
+
+  [ An-Cheng Huang ]
+  * remove invocation of script that has no effect and triggers error.
+
+  [ Stephen Hemminger ]
+  * Change help text for replace-default-route local
+
+  [ An-Cheng Huang ]
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Fri, 21 Jan 2011 07:49:33 -0800
+
+vyatta-openvpn (0.2.29) unstable; urgency=low
+
+  * new branch
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Tue, 28 Dec 2010 13:51:36 -0800
+
+vyatta-openvpn (0.2.28) unstable; urgency=low
+
+  * Changed restarting connection to use pid file.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 04 Nov 2010 22:46:33 +0000
+
+vyatta-openvpn (0.2.27) unstable; urgency=low
+
+  * bug fix for 3860 - enabling pam authentication on server and
+    username/password
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 04 Nov 2010 00:53:09 +0000
+
+vyatta-openvpn (0.2.26) unstable; urgency=low
+
+  * Validating the upper limit set for maximum clients.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Mon, 01 Nov 2010 21:57:46 +0000
+
+vyatta-openvpn (0.2.25) unstable; urgency=low
+
+  * Setting upper limit for maximum concurrent clients.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Mon, 01 Nov 2010 21:30:01 +0000
+
+vyatta-openvpn (0.2.24) unstable; urgency=low
+
+  * bug fix for:
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Mon, 18 Oct 2010 19:09:04 +0000
+
+vyatta-openvpn (0.2.23) unstable; urgency=low
+
+  * Help string modification for vyatta-openvpn package.
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Mon, 18 Oct 2010 17:20:34 +0000
+
+vyatta-openvpn (0.2.22) unstable; urgency=low
+
+  * bug fix for:
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Fri, 15 Oct 2010 20:51:14 +0000
+
+vyatta-openvpn (0.2.21) unstable; urgency=low
+
+  * bug fix for:
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Wed, 13 Oct 2010 22:57:17 +0000
+
+vyatta-openvpn (0.2.20) unstable; urgency=low
+
+  * bug fix for:
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Tue, 12 Oct 2010 18:12:30 +0000
+
+vyatta-openvpn (0.2.19) unstable; urgency=low
+
+  * bug fix for:
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 07 Oct 2010 23:46:04 +0000
+
+vyatta-openvpn (0.2.18) unstable; urgency=low
+
+  * Included the missed script file
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 07 Oct 2010 18:21:09 +0000
+
+vyatta-openvpn (0.2.17) unstable; urgency=low
+
+  * fix for bug# 5519 and 4035
+  * fix for bug # 4003
+  * Bug fix for 4003 and 3776.
+  * bug fix for:
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Wed, 06 Oct 2010 00:52:25 +0000
+
+vyatta-openvpn (0.2.16) unstable; urgency=low
+
+  * UNRELEASED
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Thu, 02 Sep 2010 18:30:26 -0700
+
+vyatta-openvpn (0.2.15) unstable; urgency=low
+
+  * update help text to use val_help
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Tue, 17 Aug 2010 15:31:31 -0700
+
+vyatta-openvpn (0.2.14) unstable; urgency=low
+
+  * UNRELEASED
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Thu, 22 Jul 2010 17:25:45 -0700
+
+vyatta-openvpn (0.2.13) unstable; urgency=low
+
+  * add node.def file for bug 3584
+
+ -- Robert Bays <rbays@roatan>  Fri, 25 Jun 2010 13:55:58 -0700
+
+vyatta-openvpn (0.2.12) unstable; urgency=low
+
+  * remove erroneous debug statement
+
+ -- Robert Bays <rbays@roatan>  Fri, 25 Jun 2010 13:46:38 -0700
+
+vyatta-openvpn (0.2.11) unstable; urgency=low
+
+  * fix for bug 3584
+
+ -- Robert Bays <rbays@roatan>  Fri, 25 Jun 2010 13:37:57 -0700
+
+vyatta-openvpn (0.2.10) unstable; urgency=low
+
+  * enable L2 bridging in OpenVPN
+
+ -- Robert Bays <rbays@roatan>  Thu, 24 Jun 2010 17:32:49 -0700
+
+vyatta-openvpn (0.2.9) unstable; urgency=low
+
+  * UNRELEASED
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Wed, 17 Feb 2010 16:15:57 -0800
+
+vyatta-openvpn (0.2.8) unstable; urgency=low
+
+  * add aux show command for interface status
+  * schedule openvpn tunnel after system and static routes are
+    configured. simple test with interface static route dependency on
+    openvpn tunnel worked with this change.
+
+ -- Michael Larson <slioch@slioch.vyatta.com>  Mon, 11 Jan 2010 11:09:39 -0800
+
+vyatta-openvpn (0.2.7) unstable; urgency=low
+
+  [ slioch ]
+  * move common process management to module from script
+  * just pass in tunnel value into process control functions and not
+    self ptr
+  * clean up calling argument for static funcs
+  * modified delegation of aux behavior in openvpn transaction.
+  * fix assignment of return code
+
+  [ Michael Larson ]
+  * dependency update
+
+ -- Michael Larson <slioch@slioch.vyatta.com>  Fri, 13 Nov 2009 13:58:03 -0800
+
+vyatta-openvpn (0.2.6) unstable; urgency=low
+
+  * move priority after tag nodes.
+
+ -- slioch <slioch@eng-140.vyatta.com>  Wed, 21 Oct 2009 09:15:48 -0700
+
+vyatta-openvpn (0.2.5) unstable; urgency=low
+
+  * pushed priority to node.def
+
+ -- slioch <slioch@eng-140.vyatta.com>  Tue, 20 Oct 2009 16:15:09 -0700
+
+vyatta-openvpn (0.2.4) unstable; urgency=low
+
+  * UNRELEASED
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Fri, 29 May 2009 18:37:05 -0700
+
+vyatta-openvpn (0.2.3) unstable; urgency=low
+
+  * Add Qos support to openVPN
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 30 Mar 2009 15:01:47 -0700
+
+vyatta-openvpn (0.2.2) unstable; urgency=low
+
+  * Remove per-interface firewall templates.  They are auto-generated
+    now.
+
+ -- Bob Gilligan <gilligan@vyatta.com>  Mon, 09 Mar 2009 11:17:23 -0700
+
+vyatta-openvpn (0.2.1) unstable; urgency=low
+
+  [ An-Cheng Huang ]
+  * add support for development build
+
+  [ Stephen Hemminger ]
+  * Change from VyattaOVPNConfig to Vyatta::OpenVPN::Config
+  * Convert to Vyatta::
+
+  [ An-Cheng Huang ]
+  * suppress warning messages
+  * update maintainer information
+  * "files" file should be removed before package build
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Thu, 08 Jan 2009 09:43:20 -0800
+
+vyatta-openvpn (0.2) unstable; urgency=low
+
+	  3.2.0
+  [ Mark O'Brien ]
+
+
+  [ An-Cheng Huang ]
+  * fix for bug 3865: remove "remote-subnet" option
+
+  [ root ]
+  * Fix Bug 3808 OpenVPN accepts non-existent local-host option
+
+  [ An-Cheng Huang ]
+  * fix for bug 3780: validate header in shared secret file.
+  * move return error check
+  * fix for bug 3855: each server instance uses its own client config
+    directory.
+  * fix for bug 3839: add "tls role" option
+  * * fix for bug 3851: default server topology is now subnet.
+  * fix for bug 3535: work around openvpn zombie by killing it
+    repeatedly
+  * fix for bug 3810: remove unnecessary warning
+  * * fix for bug 3510: add encryption/hash options.
+  * fix for bug 3544: add templates for "show interfaces openvpn".
+  * add protocol, ports, and topology options
+
+  [ rbalocca ]
+  * Ingore log file
+
+  [ An-Cheng Huang ]
+  * filter the correct tunnel IP in show output
+  * add "show openvpn server-status" command
+  * adjust stop/start sequence
+  * * allow client-specific subnets to be specified.
+  * allow specifying multiple remote-host options
+  * add ping/ping-restart options for site-to-site
+  * make openvpn output status file
+  * add client-specific settings support. currently supports fixed IP.
+  * use sudo for openvpn configuration
+  * add basic "server" mode support
+  * add operational command for generating shared secret key.
+  * allow dynamic remote host for site-to-site
+
+  [ Mark O'Brien ]
+
+ -- Mark O'Brien <mobrien@firebolt.vyatta.com>  Tue, 25 Nov 2008 19:10:32 -0800
+
+vyatta-openvpn (0.1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Thu, 10 Jul 2008 18:49:13 -0700
+

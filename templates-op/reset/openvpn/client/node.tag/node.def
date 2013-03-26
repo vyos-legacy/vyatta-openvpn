@@ -1,0 +1,4 @@
+help: Reset specified OpenVPN client
+allowed: sudo ${vyatta_bindir}/sudo-users/vyatta-show-ovpn.pl --show=client 
+run: sudo /opt/vyatta/bin/sudo-users/vyatta-reset-client-ovpn.pl --cn "$4"
+

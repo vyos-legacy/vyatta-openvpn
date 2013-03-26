@@ -1,0 +1,4 @@
+type: u32
+help: Number of maximum client connections
+syntax:expression: ($VAR(@) >= 1 && $VAR(@) <= 4096) ; "must be between 1-4096"
+val_help: u32:1-4096; Number of concurrent clients   
