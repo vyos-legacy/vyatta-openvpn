@@ -6,6 +6,7 @@ use Vyatta::OpenVPN::Config;
 
 my $vtun = shift;
 my $statusDir = "/opt/vyatta/etc/openvpn/status";
+my $multicast_script = "/opt/vyatta/sbin/vyatta_multicast_config.pl";
 
 my $config = new Vyatta::OpenVPN::Config;
 my $oconfig = new Vyatta::OpenVPN::Config;
@@ -44,6 +45,11 @@ if ($config->isRestartNeeded($oconfig) && defined($cmd)) {
      if ($? >> 8) {
        $err = 'Failed to start OpenVPN tunnel';
      }
+   if (-x $multicast_script) {
+     if (system("$multicast_script --if_type openvpn --if_name $vtun") != 0) {
+        die "Error during execution of $multicast_script";
+     }
+   }
   }
 }
 my $description = $config->{_description};
