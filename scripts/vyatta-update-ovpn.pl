@@ -44,6 +44,12 @@ if ($config->isRestartNeeded($oconfig) && defined($cmd)) {
      if ($? >> 8) {
        $err = 'Failed to start OpenVPN tunnel';
      }
+     if (-x $multicast_script) {
+       if (system("$multicast_script --if_type openvpn --if_name
+$vtun") != 0) {
+          die "Error during execution of $multicast_script";
+       }
+     }   
   }
 }
 my $description = $config->{_description};
