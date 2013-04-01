@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.60+daisy3) unstable; urgency=low
+
+  * Fixing 8819, additional fix from Mirantis.
+
+ -- root <root@localhost.localdomain>  Mon, 01 Apr 2013 11:35:20 -0700
+
 vyatta-openvpn (0.2.60+daisy2) unstable; urgency=low
 
   * Patch as requested by Mirantis to fix 8819.
