@@ -1,3 +1,22 @@
+vyatta-openvpn (0.2.60+daisy5) unstable; urgency=low
+
+  [ Kirill Nikulin ]
+  * Initial empty repository
+
+  [ Alexey Odinokov ]
+  * added daisy branch to master
+
+  [ Victoria Efimova ]
+  * Bug 8819: Added call of multicast scripts which restores
+    configuration after openvpn daemon restart
+  * Bug 8819: Don't call multicast script in case of openvpn start
+    failed
+  * Bug 8840: Fixed daemon restart within every commit
+
+  [ Gaurav Sinha ]
+
+ -- Gaurav Sinha <gaurav.sinha@vyatta.com>  Mon, 08 Apr 2013 11:09:03 -0700
+
 vyatta-openvpn (0.2.60+daisy4) unstable; urgency=low
 
   * force release
