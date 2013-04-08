@@ -338,7 +338,7 @@ sub isRestartNeeded {
   return 1 if ($this->{_local_host} ne $that->{_local_host});
   return 1 if ($this->{_remote_addr} ne $that->{_remote_addr});
   return 1 if (listsDiff($this->{_remote_host}, $that->{_remote_host}));
-  return 1 if ($this->{_options} ne $that->{_options});
+  return 1 if (listsDiff($this->{_options}, $that->{_options}));
   return 1 if ($this->{_secret_file} ne $that->{_secret_file});
   return 1 if ($this->{_mode} ne $that->{_mode});
   return 1 if ($this->{_server_subnet} ne $that->{_server_subnet});
@@ -386,7 +386,7 @@ sub isDifferentFrom {
   return 1 if ($this->{_local_host} ne $that->{_local_host});
   return 1 if ($this->{_remote_addr} ne $that->{_remote_addr});
   return 1 if (listsDiff($this->{_remote_host}, $that->{_remote_host}));
-  return 1 if ($this->{_options} ne $that->{_options});
+  return 1 if (listsDiff($this->{_options}, $that->{_options}));
   return 1 if ($this->{_secret_file} ne $that->{_secret_file});
   return 1 if ($this->{_mode} ne $that->{_mode});
   return 1 if ($this->{_server_subnet} ne $that->{_server_subnet});
