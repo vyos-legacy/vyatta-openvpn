@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.60+daisy6) unstable; urgency=low
+
+  * Add size and files options to "traffic save"
+
+ -- James Davidson <james.davidson@vyatta.com>  Fri, 26 Apr 2013 12:29:09 -0700
+
 vyatta-openvpn (0.2.60+daisy5) unstable; urgency=low
 
   [ Kirill Nikulin ]
