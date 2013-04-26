@@ -1,2 +1,3 @@
-help: Save monitored traffic to a file
+help: Save monitored traffic to the specified file
+allowed: echo -e '<name>.pcap'
 run: ${vyatta_bindir}/vyatta-tshark.pl --intf $4 --save "${@:7}"

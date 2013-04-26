@@ -1,0 +1,3 @@
+help: Maximum file size (e.g., 1 = 1 KiB, 1M = 1 MiB)
+allowed: echo -e '<number>'
+run: ${vyatta_bindir}/vyatta-tshark.pl --intf $4 --save "${@:7}" --size "${@:9}"

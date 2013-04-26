@@ -1,0 +1,4 @@
+help: Number of files to rotate stored traffic through
+allowed: echo -e '<number>'
+run: ${vyatta_bindir}/vyatta-tshark.pl --intf $4 --save "${@:7}" --size "${@:9}" --files "${@:11}"
+
