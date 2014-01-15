@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.60+vyos1+helium1) unstable; urgency=low
+
+  * New branch
+
+ -- Daniil Baturin <daniil@baturin.org>  Wed, 15 Jan 2014 05:44:59 +0100
+
 vyatta-openvpn (0.2.60+hydrogen1) unstable; urgency=low
 
   * New branch
