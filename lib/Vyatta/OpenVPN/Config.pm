@@ -456,7 +456,7 @@ sub checkHeader {
  else { 
    @hdrs = grep { /^$header$/ } <$FP>;
    close($FP);
-   if (scalar(@hdrs) == 1) 
+   if (scalar(@hdrs) >= 1) 
    { return 0; } 
    else
    { return 1; } 
