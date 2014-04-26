@@ -73,7 +73,8 @@ EOH
   $i++;
   while (!($lines[$i] =~ /^GLOBAL STATS$/)) {
     my ($tip, $rip) = (split /,/, $lines[$i])[0,2];
-    $routes{$rip} = $tip; 
+    $routes{$rip} = $tip
+	unless $tip =~ /C$|\//;		# skip server-configured and client-learned routes
     $i++;
   }
 
