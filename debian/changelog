@@ -1,3 +1,10 @@
+vyatta-openvpn (0.2.60+hydrogen2) unstable; urgency=low
+
+  * Bug #172: allow contatenated CA's. Fix suggested by Ryan Robertson.
+  * Bug #151: omit client-learned routes. Fix by Paul Gear.
+
+ -- Daniil Baturin <daniil@baturin.org>  Sun, 27 Apr 2014 02:52:00 +0200
+
 vyatta-openvpn (0.2.60+hydrogen1) unstable; urgency=low
 
   * New branch
