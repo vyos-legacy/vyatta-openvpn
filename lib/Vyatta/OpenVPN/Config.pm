@@ -729,9 +729,9 @@ sub get_command {
     $cmd .= ' --management /tmp/openvpn-mgmt-intf unix';  
     if (defined($self->{_r_def_route})) {
       if (defined($self->{_r_def_rt_loc})) {
-        $cmd .= ' --push "redirect-gateway local" ';
+        $cmd .= ' --push "redirect-gateway local def1" ';
       } else {
-        $cmd .= ' --push "redirect-gateway" ';
+        $cmd .= ' --push "redirect-gateway def1" ';
       }
     }
   
@@ -846,9 +846,9 @@ sub get_command {
         if (scalar(@{$self->{_remote_host}}) <= 0);
 
       if (defined($self->{_r_def_rt_loc})) {
-        $cmd .= ' --redirect-gateway local ';
+        $cmd .= ' --redirect-gateway local def1 ';
       } else {
-        $cmd .= ' --redirect-gateway ';
+        $cmd .= ' --redirect-gateway def1 ';
       }
     }
   }
