@@ -57,6 +57,7 @@ my %fields = (
   _device_type	 => undef,
   _client_disable  => [],
   _dns_suffix	 => undef, 
+  _ccd_exclusive => undef,
 );
 
 my $iftype = 'interfaces openvpn';
@@ -124,6 +125,7 @@ sub setup {
     $self->{_laddr_subnet} = $config->returnValue("local-address $laddr[0] subnet-mask");
   } 
   $self->{_dns_suffix} = $config->returnValue('server domain-name');
+  if ( $config->exists('server reject-unconfigured-clients') ) { $self->{_ccd_exclusive} = 1; }
   my @clients = $config->listNodes('server client');
   # client IPs
   my @cips = ();
@@ -231,6 +233,7 @@ sub setupOrig {
     $self->{_laddr_subnet} = $config->returnOrigValue("local-address $laddr[0] subnet-mask");
   } 
   $self->{_dns_suffix} = $config->returnOrigValue('server domain-name');
+  if ( $config->existsOrig('server reject-unconfigured-clients') ) { $self->{_ccd_exclusive} = 1; }
   my @clients = $config->listOrigNodes('server client');
   # client IPs
   my @cips = ();
@@ -372,6 +375,7 @@ sub isRestartNeeded {
   return 1 if ($this->{_laddr_subnet} ne $that->{_laddr_subnet});
   return 1 if ($this->{_dns_suffix} ne $that->{_dns_suffix});
   return 1 if (listsDiff($this->{_options}, $that->{_options}));
+  return 1 if ($this->{_ccd_exclusive} ne $that->{_ccd_exclusive});
   return 0;
 }
 
@@ -426,6 +430,7 @@ sub isDifferentFrom {
   return 1 if (pairListsDiff($this->{_client_disable}, $that->{_client_disable}));
   return 1 if ($this->{_dns_suffix} ne $that->{_dns_suffix});
   return 1 if (listsDiff($this->{_options}, $that->{_options}));
+  return 1 if ($this->{_ccd_exclusive} ne $that->{_ccd_exclusive});
   return 0;
 }
 
@@ -467,6 +472,14 @@ sub get_command {
   my ($self) = @_;
   my $cmd = "/usr/sbin/openvpn --daemon openvpn-$self->{_intf} --verb 3 --writepid /var/run/openvpn-$self->{_intf}.pid";
   if ( $self->{_disable} ) { return ('disable', undef); }
+
+  if ($self->{_ccd_exclusive}) {
+     if ($self->{_mode} ne 'server') {
+         return (undef, 'Can specify "reject-unconfigured-clients" in server mode only');
+     } else {
+         $cmd .= " --ccd-exclusive ";
+     }
+  }
 
   # status
   $cmd .= " --status $status_dir/$self->{_intf}.status $status_itvl";
