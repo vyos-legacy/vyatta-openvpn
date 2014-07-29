@@ -1,3 +1,19 @@
+vyatta-openvpn (0.2.60+vyos1+helium3) unstable; urgency=low
+
+  [ Daniil Baturin ]
+  * Bug #172: allow contatenated CA's. Fix suggested by Ryan Robertson.
+  * Bug #151: omit client-learned routes. Fix by Paul Gear.
+
+  [ Antonio Cunyat Alario ]
+  * Bug 221 - Openvpn server mode makes remote client loose default
+    openvpn on dhcp renew
+
+  [ Daniil Baturin ]
+  * Bug #14: add an option to reject unconfigured clients.
+  * Remove strange call to a nonexistent file (probably VSE stub).
+
+ -- Daniil Baturin <daniil@baturin.org>  Tue, 29 Jul 2014 04:43:51 +0200
+
 vyatta-openvpn (0.2.60+vyos1+helium2) unstable; urgency=low
 
   * Bug #8: Place generated OpenVPN keys in /config/auth unless full
