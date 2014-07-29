@@ -7,12 +7,5 @@ syntax:expression: pattern $VAR(@) "^vtun[0-9]+$"
         ; "OpenVPN tunnel interface must be named \"vtun<num>\""
 
 end: 
-     result=1;
-     if [ -x /opt/vyatta/sbin/vyatta-update-ovpn-aux.pl ]; then
-          sudo /opt/vyatta/sbin/vyatta-update-ovpn-aux.pl "$VAR(@)";
-	  result=$?
-     fi
-     if [ $result = 1 ]; then
-          sudo /opt/vyatta/sbin/vyatta-update-ovpn.pl "$VAR(@)"  
-     fi;
+    sudo /opt/vyatta/sbin/vyatta-update-ovpn.pl "$VAR(@)"
 
