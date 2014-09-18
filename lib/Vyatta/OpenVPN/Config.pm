@@ -58,6 +58,7 @@ my %fields = (
     _client_disable   => [],
     _dns_suffix       => undef,
     _ccd_exclusive    => undef,
+    _persistent_intf  => undef,
 );
 
 my $iftype = 'interfaces openvpn';
@@ -181,7 +182,9 @@ sub setup {
     $self->{_qos_out} = $config->returnValue('traffic-policy out');
     $self->{_qos_in} = $config->returnValue('traffic-policy in');
     $self->{_redirect} = $config->returnValue('redirect');
-
+    if ($config->exists('persistent-interface')) {
+        $self->{_persistent_intf} = 1;
+    }
     my @options = $config->returnValues('openvpn-option');
     $self->{_options} = \@options;
 
@@ -297,6 +300,9 @@ sub setupOrig {
     $self->{_qos_out} = $config->returnOrigValue('traffic-policy out');
     $self->{_qos_in} = $config->returnOrigValue('traffic-policy in');
     $self->{_redirect} = $config->returnOrigValue('redirect');
+    if ($config->existsOrig('persistent-interface')) {
+        $self->{_persistent_intf} = 1;
+    }
     my @options = $config->returnOrigValues('openvpn-option');
     $self->{_options} = \@options;
 
@@ -390,6 +396,7 @@ sub isRestartNeeded {
     return 1 if ($this->{_dns_suffix} ne $that->{_dns_suffix});
     return 1 if (listsDiff($this->{_options}, $that->{_options}));
     return 1 if ($this->{_ccd_exclusive} ne $that->{_ccd_exclusive});
+    return 1 if ($this->{_persistent_intf} ne $that->{_persistent_intf});
     return 0;
 }
 
@@ -444,6 +451,7 @@ sub isDifferentFrom {
     return 1 if ($this->{_dns_suffix} ne $that->{_dns_suffix});
     return 1 if (listsDiff($this->{_options}, $that->{_options}));
     return 1 if ($this->{_ccd_exclusive} ne $that->{_ccd_exclusive});
+    return 1 if ($this->{_persistent_intf} ne $that->{_persistent_intf});
     return 0;
 }
 
@@ -882,6 +890,14 @@ sub get_command {
             } else {
                 $cmd .= ' --redirect-gateway def1 ';
             }
+        }
+    }
+    
+    if ($self->{_persistent_intf}) {
+        if ($self->{_mode} eq 'server') {
+            return (undef, 'Cannot set "persistent-tunnel" in server mode');
+        } else {
+            $cmd .= " --persist-tun ";
         }
     }
 
