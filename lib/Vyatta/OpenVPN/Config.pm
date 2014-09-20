@@ -894,11 +894,7 @@ sub get_command {
     }
     
     if ($self->{_persistent_intf}) {
-        if ($self->{_mode} eq 'server') {
-            return (undef, 'Cannot set "persistent-tunnel" in server mode');
-        } else {
-            $cmd .= " --persist-tun ";
-        }
+        $cmd .= " --persist-tun ";
     }
 
     # extra options
