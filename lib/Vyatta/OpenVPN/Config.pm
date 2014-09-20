@@ -182,7 +182,7 @@ sub setup {
     $self->{_qos_out} = $config->returnValue('traffic-policy out');
     $self->{_qos_in} = $config->returnValue('traffic-policy in');
     $self->{_redirect} = $config->returnValue('redirect');
-    if ($config->exists('persistent-interface')) {
+    if ($config->exists('persistent-tunnel')) {
         $self->{_persistent_intf} = 1;
     }
     my @options = $config->returnValues('openvpn-option');
@@ -300,7 +300,7 @@ sub setupOrig {
     $self->{_qos_out} = $config->returnOrigValue('traffic-policy out');
     $self->{_qos_in} = $config->returnOrigValue('traffic-policy in');
     $self->{_redirect} = $config->returnOrigValue('redirect');
-    if ($config->existsOrig('persistent-interface')) {
+    if ($config->existsOrig('persistent-tunnel')) {
         $self->{_persistent_intf} = 1;
     }
     my @options = $config->returnOrigValues('openvpn-option');
