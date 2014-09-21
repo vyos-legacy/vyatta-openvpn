@@ -59,12 +59,12 @@ sub output_server_status {
     if (!($lines[0] =~ /^OpenVPN CLIENT LIST$/)) {
         return 0;
     }
-    print <<EOH;
-OpenVPN server status on $intf [$desc] 
-
-Client CN       Remote IP       Tunnel IP       TX byte RX byte Connected Since
---------------- --------------- --------------- ------- ------- ------------------------
-EOH
+    
+    my $format = "%-15s %-15s %-15s %7s %7s %s\n";
+    print "\n";
+    print "OpenVPN server status on $intf [$desc]\n\n"; 
+    printf($format, "Client CN", "Remote IP", "Tunnel IP", "TX byte", "RX byte", "Connected Since");
+    printf($format, "---------", "---------", "---------", "-------", "-------", "---------------");
 
     my @clients = ();
     my %routes = ();
@@ -89,7 +89,7 @@ EOH
         my $rbytes = stat2str($recv);
         my $sbytes = stat2str($sent);
 
-        printf "%-15s %-15s %-15s %7s %7s %s\n",$name, $rip, $tip_str, $sbytes, $rbytes, $since;
+        printf($format,$name, $rip, $tip_str, $sbytes, $rbytes, $since);
     }
     print "\n\n";
 
@@ -189,14 +189,14 @@ sub output_client_status {
     my @lines = @_;
     my $mode = "client";
     my ($desc, $remote, $sent, $recv) = parse_status($intf, $mode, @lines);
-    print <<EOH;
-OpenVPN client status on $intf [$desc]
-
-Server CN       Remote IP       Tunnel IP       TX byte RX byte Connected Since
---------------- --------------- --------------- ------- ------- ------------------------
-EOH
-
-    printf "%-15s %-15s %-15s %7s %7s %s\n","N/A", $remote, "N/A", $sent, $recv, "N/A";
+    
+    my $format = "%-15s %-15s %-15s %7s %7s %s\n";
+    print "\n";
+    print "OpenVPN client status on $intf [$desc]\n\n";
+    printf($format, "Server CN", "Remote IP", "Tunnel IP", "TX byte", "RX byte", "Connected Since");
+    printf($format, "---------", "---------", "---------", "-------", "-------", "---------------");
+    
+    printf($format,"N/A", $remote, "N/A", $sent, $recv, "N/A");
     print "\n\n";
     return 1;
 }
@@ -206,13 +206,14 @@ sub output_sitetosite_status {
     my @lines = @_;
     my $mode = "site-to-site";
     my ($desc, $remote, $sent, $recv, $rsite, $rtunnel) = parse_status($intf, $mode, @lines);
-    print <<EOH;
-OpenVPN client status on $intf [$desc] 
 
-Remote CN       Remote IP       Tunnel IP       TX byte RX byte Connected Since
---------------- --------------- --------------- ------- ------- ------------------------
-EOH
-    printf "%-15s %-15s %-15s %7s %7s %s\n",$rsite, $remote, $rtunnel, $sent, $recv, "N/A";
+    my $format = "%-15s %-15s %-15s %7s %7s %s\n";
+    print "\n";
+    print "OpenVPN client status on $intf [$desc]\n\n";
+    printf($format, "Remote CN", "Remote IP", "Tunnel IP", "TX byte", "RX byte", "Connected Since");
+    printf($format, "---------", "---------", "---------", "-------", "-------", "---------------");
+
+    printf($format, $rsite, $remote, $rtunnel, $sent, $recv, "N/A");
     print "\n\n";
     return 1;
 }
