@@ -34,37 +34,34 @@ my $line;
 
 ##Main
 unless (-e "/tmp/openvpn-mgmt-intf") {
-  print "This command is only supported by OpenVPN in server mode\n";
-  exit 1;
-} 
+    print "This command is only supported by OpenVPN in server mode\n";
+    exit 1;
+}
 
-my $socket = IO::Socket::UNIX->new(
-  Type => SOCK_STREAM,
-  Peer => $socket_path,
-)
-  or die("Cannot connect to management interface\n");
+my $socket = IO::Socket::UNIX->new(Type => SOCK_STREAM, Peer => $socket_path,)
+    or die("Cannot connect to management interface\n");
 
-chomp( $line = <$socket> );
+chomp($line = <$socket>);
 
 sub reset_client {
-  my $cn = shift;
-  print $socket "kill $cn\n";
-  chomp( $line = <$socket> );
-  if ($line =~ /SUCCESS/) {
-    print "Client with command-name '$cn' has been reset.\n";
-    return 0;
-  } 
-  elsif ($line =~ /ERROR/) { 
-    return 1;
-  }
+    my $cn = shift;
+    print $socket "kill $cn\n";
+    chomp($line = <$socket>);
+    if ($line =~ /SUCCESS/) {
+        print "Client with Common-Name '$cn' has been reset.\n";
+        return 0;
+    } elsif ($line =~ /ERROR/) {
+        return 1;
+    }
 }
 
 if ($cn) {
-  if (reset_client($cn)) {
-    print "Invalid Common-Name\n";
-    exit 1; 
-  }
+    if (reset_client($cn)) {
+        print "Invalid Common-Name\n";
+        exit 1;
+    }
 }
+
 shutdown($socket, 2)
-  or die ("Error closing the socket\n");
+    or die("Error closing the socket\n");
 exit 0;
