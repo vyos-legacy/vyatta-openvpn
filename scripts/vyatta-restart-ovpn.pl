@@ -60,26 +60,29 @@ if ($vtun) {
         unless is_valid_intf($vtun);
 }
 
-print "This will reset and re-establish all tunnel connections on this interface.\n";
+print "\nThis will reset and re-establish all tunnel connections on this interface.\n";
 
-if ((defined($ENV{VYATTA_PROCESS_CLIENT}) && $ENV{VYATTA_PROCESS_CLIENT} eq 'gui2_rest') || prompt("Are you sure you want to continue? (Y/n)", -y1d=>"y")) {
-    if (is_persistent($vtun) && prompt("This is a persistent tunnel, do you want to reset the interface? (Y/n)", -y1d=>"y")) {
-        # Send SIGHUP rather than SIGUSR1 to force the interface to reset
-        $reset_persistent = 1;
-        $cmd = 'kill -HUP ';
+if ((defined($ENV{VYATTA_PROCESS_CLIENT}) && $ENV{VYATTA_PROCESS_CLIENT} eq 'gui2_rest') || prompt("Are you sure you want to continue? (y/n)", -y1d=>"y")) {
+    if (is_persistent($vtun)) {
+        print "\nThis interface has been configured as a persistent tunnel, so will be reused.\n";
+        if (prompt("Do you want to reset the interface as well? (y/n)", -y1d=>"y")) {
+            # Send SIGHUP rather than SIGUSR1 to force the interface to reset
+            $reset_persistent = 1;
+            $cmd = 'kill -HUP ';
+        }
     }
     $pid = `cat /var/run/openvpn-$vtun.pid`;
     if ($pid) {
         $cmd .= "$pid";
         system($cmd);
         if ($reset_persistent) {
-            print "Both the tunnel connections and interface for $vtun have been reset.\n";
+            print "\nBoth the tunnel connections and interface for $vtun have been reset.\n";
         }else {
-            print "Tunnel connections for interface $vtun have been reset.\n";
+            print "\nTunnel connections for interface $vtun have been reset.\n";
         }
     } else {
-        print "No tunnel connection on interface $vtun.\n";
+        print "\nNo tunnel connection on interface $vtun.\n";
     }
 } else {
-    print "Reset cancelled\n";
+    print "\nReset cancelled\n";
 }
