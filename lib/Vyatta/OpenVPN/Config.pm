@@ -575,6 +575,9 @@ sub get_command {
                     if ($rem eq $self->{_remote_addr});
             }
         }
+        if ($self->{_local_addr} eq $self->{_remote_addr}) {
+            return (undef, '"local-address" and "remote-address" cannot be the same');
+        }
         if ($self->{_device_type}) {
             return (undef, 'Must specify "subnet-mask" for local-address')
                 if (!($self->{_laddr_subnet}));
