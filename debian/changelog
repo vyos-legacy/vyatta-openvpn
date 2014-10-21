@@ -1,3 +1,27 @@
+vyatta-openvpn (0.2.60+vyos1+helium4) unstable; urgency=low
+
+  [ Ralf Ertzinger ]
+  * Accept PKCS#8 private keys as well
+
+  [ Alex Harpin ]
+  * vyatta-openvpn: formatting changes for style consistency
+  * vyatta-openvpn: add 'set interfaces openvpn vtun0 persistent-tunnel'
+  * vyatta-openvpn: formatting changes for style consistency
+  * vyatta-openvpn: correct a typo in server mode reset message.
+  * vyatta-openvpn: correct a typo in the persistent-tunnel template
+  * vyatta-openvpn: correct wrong node name usage for persistent tunnels
+  * vyatta-openvpn: persistent tunnels in server mode and allow full
+    reset
+  * vyatta-openvpn: tidy up output from 'reset openvpn interface vtun0'
+  * vyatta-openvpn: tidy up output on "show openvpn <type> status"
+    messages
+
+  [ Daniil Baturin ]
+  * Bug #312: Produce an error when tunnel local and remote addresses
+    are the same.
+
+ -- Daniil Baturin <daniil@baturin.org>  Tue, 21 Oct 2014 20:03:43 +0200
+
 vyatta-openvpn (0.2.60+vyos1+helium3) unstable; urgency=low
 
   [ Daniil Baturin ]
