@@ -59,6 +59,7 @@ my %fields = (
     _dns_suffix       => undef,
     _ccd_exclusive    => undef,
     _persistent_intf  => undef,
+    _lzo_compress     => undef,
 );
 
 my $iftype = 'interfaces openvpn';
@@ -185,6 +186,9 @@ sub setup {
     if ($config->exists('persistent-tunnel')) {
         $self->{_persistent_intf} = 1;
     }
+    if ($config->exists('use-lzo-compression')) {
+        $self->{_lzo_compress} = 1;
+    }
     my @options = $config->returnValues('openvpn-option');
     $self->{_options} = \@options;
 
@@ -303,6 +307,9 @@ sub setupOrig {
     if ($config->existsOrig('persistent-tunnel')) {
         $self->{_persistent_intf} = 1;
     }
+    if ($config->existsOrig('use-lzo-compression')) {
+        $self->{_lzo_compress} = 1;
+    }
     my @options = $config->returnOrigValues('openvpn-option');
     $self->{_options} = \@options;
 
@@ -397,6 +404,7 @@ sub isRestartNeeded {
     return 1 if (listsDiff($this->{_options}, $that->{_options}));
     return 1 if ($this->{_ccd_exclusive} ne $that->{_ccd_exclusive});
     return 1 if ($this->{_persistent_intf} ne $that->{_persistent_intf});
+    return 1 if ($this->{_lzo_compress} ne $that->{_lzo_compress});
     return 0;
 }
 
@@ -452,6 +460,7 @@ sub isDifferentFrom {
     return 1 if (listsDiff($this->{_options}, $that->{_options}));
     return 1 if ($this->{_ccd_exclusive} ne $that->{_ccd_exclusive});
     return 1 if ($this->{_persistent_intf} ne $that->{_persistent_intf});
+    return 1 if ($this->{_lzo_compress} ne $that->{_lzo_compress});
     return 0;
 }
 
@@ -900,6 +909,10 @@ sub get_command {
         $cmd .= " --persist-tun ";
     }
 
+    if ($self->{_lzo_compress}) {
+        $cmd .= " --comp-lzo";
+    }
+    
     # extra options
     if (scalar(@{$self->{_options}}) > 0) {
         for my $option (@{$self->{_options}}) {
