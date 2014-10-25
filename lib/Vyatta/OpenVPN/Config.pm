@@ -906,7 +906,7 @@ sub get_command {
     }
     
     if ($self->{_persistent_intf}) {
-        $cmd .= " --persist-tun ";
+        $cmd .= " --persist-tun";
     }
 
     if ($self->{_lzo_compress}) {
