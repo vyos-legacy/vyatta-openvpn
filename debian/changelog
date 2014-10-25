@@ -1,3 +1,21 @@
+vyatta-openvpn (0.2.60+vyos2+lithium2) unstable; urgency=low
+
+  [ Alex Harpin ]
+  * vyatta-openvpn: add 'set interfaces openvpn vtun0 use-lzo-
+    compression'
+  * Revert "openvpn add 'set interfaces openvpn vtun0 use-lzo-
+    compression'"
+
+  [ Daniil Baturin ]
+
+ -- Daniil Baturin <dmbaturin@squeeze32devel.multi.eu>  Sat, 25 Oct 2014 17:56:50 +0200
+
+vyatta-openvpn (0.2.60+vyos2+lithium1) unstable; urgency=low
+
+  * New branch
+
+ -- Daniil Baturin <daniil@baturin.org>  Sat, 25 Oct 2014 22:10:52 +0700
+
 vyatta-openvpn (0.2.60+vyos1+helium4) unstable; urgency=low
 
   [ Ralf Ertzinger ]
