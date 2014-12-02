@@ -1,3 +1,11 @@
+vyatta-openvpn (0.2.60+vyos2+lithium3) unstable; urgency=low
+
+  [ Alex Harpin ]
+  * vyatta-openvpn: add 'set interfaces openvpn vtun0 use-lzo-compression'
+  * vyatta-openvpn: remove extra space from persist-tun option
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Tue, 02 Dec 2014 22:36:59 +0000
+ 
 vyatta-openvpn (0.2.60+vyos2+lithium2) unstable; urgency=low
 
   [ Alex Harpin ]
