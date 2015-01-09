@@ -1,5 +1,0 @@
-type: u32
-default: 12
-syntax:expression: $VAR(@) >= 1; "failure-count must be greater than 0"
-help: Maximum number of keepalive packet failures
-val_help: u32; Maximum number of keepalive packet failures

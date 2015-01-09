@@ -1,5 +1,0 @@
-type: u32
-default: 10
-syntax:expression: $VAR(@) >= 1; "interval must be greater than 0"
-help: Keepalive packet interval (seconds)
-val_help: u32; Keepalive packet interval (seconds)

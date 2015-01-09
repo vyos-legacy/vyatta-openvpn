@@ -60,8 +60,6 @@ my %fields = (
     _ccd_exclusive    => undef,
     _persistent_intf  => undef,
     _lzo_compress     => undef,
-    _keepalive_interval	=> undef,
-    _keepalive_failures	=> undef,
 );
 
 my $iftype = 'interfaces openvpn';
@@ -191,8 +189,6 @@ sub setup {
     if ($config->exists('use-lzo-compression')) {
         $self->{_lzo_compress} = 1;
     }
-    $self->{_keepalive_interval} = $config->returnValue('keep-alive interval');
-    $self->{_keepalive_failures} = $config->returnValue('keep-alive failure-count');
     my @options = $config->returnValues('openvpn-option');
     $self->{_options} = \@options;
 
@@ -314,8 +310,6 @@ sub setupOrig {
     if ($config->existsOrig('use-lzo-compression')) {
         $self->{_lzo_compress} = 1;
     }
-    $self->{_keepalive_interval} = $config->returnValue('keep-alive interval');
-    $self->{_keepalive_failures} = $config->returnValue('keep-alive failure-count');
     my @options = $config->returnOrigValues('openvpn-option');
     $self->{_options} = \@options;
 
@@ -411,8 +405,6 @@ sub isRestartNeeded {
     return 1 if ($this->{_ccd_exclusive} ne $that->{_ccd_exclusive});
     return 1 if ($this->{_persistent_intf} ne $that->{_persistent_intf});
     return 1 if ($this->{_lzo_compress} ne $that->{_lzo_compress});
-    return 1 if ($this->{_keepalive_interval} ne $that->{_keepalive_interval});
-    return 1 if ($this->{_keepalive_failures} ne $that->{_keepalive_failures});
     return 0;
 }
 
@@ -469,8 +461,6 @@ sub isDifferentFrom {
     return 1 if ($this->{_ccd_exclusive} ne $that->{_ccd_exclusive});
     return 1 if ($this->{_persistent_intf} ne $that->{_persistent_intf});
     return 1 if ($this->{_lzo_compress} ne $that->{_lzo_compress});
-    return 1 if ($this->{_keepalive_interval} ne $that->{_keepalive_interval});
-    return 1 if ($this->{_keepalive_failures} ne $that->{_keepalive_failures});
     return 0;
 }
 
@@ -921,12 +911,6 @@ sub get_command {
 
     if ($self->{_lzo_compress}) {
         $cmd .= " --comp-lzo";
-    }
-    
-    if ($self->{_keepalive_interval} && $self->{_keepalive_failures}) {
-        my $n = $self->{_keepalive_interval};
-        my $m = $self->{_keepalive_interval} * $self->{_keepalive_failures};
-        $cmd .= " --keepalive $n $m";
     }
     
     # extra options
