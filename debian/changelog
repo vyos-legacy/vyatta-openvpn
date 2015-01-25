@@ -1,3 +1,12 @@
+vyatta-openvpn (0.2.60+vyos2+lithium5) unstable; urgency=low
+
+  [ Alex Harpin ]
+  * Revert "vyatta-openvpn: add 'set interfaces openvpn vtun0 keep-alive'"
+  * vyatta-openvpn: move the reject-unconfigured-clients config node
+  * vyatta-openvpn: add 'set interfaces openvpn vtun0 keep-alive'
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Sun, 25 Jan 2015 15:06:00 +0000
+ 
 vyatta-openvpn (0.2.60+vyos2+lithium4) unstable; urgency=low
 
   * Update maintainer address
