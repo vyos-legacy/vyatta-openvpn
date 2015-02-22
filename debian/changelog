@@ -1,3 +1,10 @@
+vyatta-openvpn (0.2.60+vyos1+helium5) unstable; urgency=low
+
+  [ Alex Harpin ]
+  vyatta-openvpn: move the reject-unconfigured-clients config node
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Sun, 22 Feb 2015 11:04:07 +0000
+ 
 vyatta-openvpn (0.2.60+vyos1+helium4) unstable; urgency=low
 
   [ Ralf Ertzinger ]
