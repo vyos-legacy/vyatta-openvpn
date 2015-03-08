@@ -33,6 +33,7 @@ my %fields = (
     _tls_dh        => undef,
     _tls_crl       => undef,
     _tls_role      => undef,
+    _clients       => [],
     _client_ip     => [],
     _client_subnet => [],
     _topo          => undef,
@@ -134,6 +135,9 @@ sub setup {
     }
     my @clients = $config->listNodes('server client');
 
+    # clients
+    $self->{_clients} = \@clients;
+    
     # client IPs
     my @cips = ();
     for my $c (@clients) {
@@ -257,6 +261,9 @@ sub setupOrig {
     }
     my @clients = $config->listOrigNodes('server client');
 
+    # clients
+    $self->{_clients} = \@clients;
+    
     # client IPs
     my @cips = ();
     for my $c (@clients) {
@@ -439,6 +446,7 @@ sub isDifferentFrom {
     return 1 if ($this->{_tls_crl} ne $that->{_tls_crl});
     return 1 if ($this->{_tls_role} ne $that->{_tls_role});
     return 1 if ($this->{_tls_def} ne $that->{_tls_def});
+    return 1 if (listsDiff($this->{_clients}, $that->{_clients}));
     return 1 if (pairListsDiff($this->{_client_ip}, $that->{_client_ip}));
     return 1 if (doublePairDiff($this->{_client_subnet},$that->{_client_subnet}));
     return 1 if ($this->{_topo} ne $that->{_topo});
@@ -846,6 +854,15 @@ sub get_command {
         # per-client config specified. write them out.
         system("mkdir -p $ccd_dir ; rm -f $ccd_dir/*");
         return (undef, 'Cannot generate per-client configurations') if ($? >> 8);
+        
+        if(scalar(@{$self->{_clients}}) > 0) {
+            for my $client (@{$self->{_clients}}) {
+                system("touch $ccd_dir/$client");
+                return (undef, 'Cannot generate per-client configurations')
+                    if ($? >> 8);
+            }
+        }
+        
         if (scalar(@{$self->{_client_ip}}) > 0
          || scalar(@{$self->{_client_subnet}}) > 0
          || scalar(@{$self->{_client_route}}) > 0
