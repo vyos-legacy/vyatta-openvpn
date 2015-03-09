@@ -1,3 +1,11 @@
+vyatta-openvpn (0.2.60+vyos2+lithium6) unstable; urgency=low
+
+  [ Alex Harpin ]
+  * vyatta-openvpn: allow clients to connect without requiring options
+  * vyatta-openvpn: update dh_gencontrol to use new development build flag
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Mon, 09 Mar 2015 09:02:56 +0000
+ 
 vyatta-openvpn (0.2.60+vyos2+lithium5) unstable; urgency=low
 
   [ Alex Harpin ]
