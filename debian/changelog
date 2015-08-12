@@ -1,3 +1,12 @@
+vyatta-openvpn (0.2.60+vyos1+helium6) unstable; urgency=low
+
+  [ Alex Harpin ]
+  * vyatta-openvpn: allow clients to connect without requiring options
+
+  [ Daniil Baturin ]
+
+ -- Daniil Baturin <daniil@baturin.org>  Wed, 12 Aug 2015 04:04:05 +0200
+
 vyatta-openvpn (0.2.60+vyos1+helium5) unstable; urgency=low
 
   [ Alex Harpin ]
