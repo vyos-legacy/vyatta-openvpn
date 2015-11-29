@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.60+vyos3+rev3) unstable; urgency=low
+
+  * Use --auth-retry nointeract for clients.
+
+ -- Daniil Baturin <daniil@baturin.org>  Sun, 29 Nov 2015 16:16:08 +0100
+
 vyatta-openvpn (0.2.60+vyos3+rev2) unstable; urgency=low
 
   * Force release
