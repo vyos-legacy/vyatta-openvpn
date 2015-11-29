@@ -1,3 +1,10 @@
+vyatta-openvpn (0.2.60+vyos2+lithium7) unstable; urgency=low
+
+  * Bug #190: initial implementation of user/password auth option
+    wrapper.
+
+ -- Daniil Baturin <daniil@baturin.org>  Sun, 29 Nov 2015 02:42:17 +0100
+
 vyatta-openvpn (0.2.60+vyos2+lithium6) unstable; urgency=low
 
   [ Alex Harpin ]
