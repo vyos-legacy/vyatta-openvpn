@@ -811,7 +811,7 @@ sub get_command {
         my $pw_file_contents = $self->{_auth_username} . "\n" . $self->{_auth_password};
         overwrite_file($pw_file, $pw_file_contents) ||
             return(undef, 'Failed to create user/password file');
-        $cmd .= " --auth-user-pass $pw_file";
+        $cmd .= " --auth-user-pass $pw_file --auth-retry nointeract";
     }
 
     # secret file
