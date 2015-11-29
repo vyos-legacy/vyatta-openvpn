@@ -7,6 +7,7 @@ use lib "/opt/vyatta/share/perl5";
 use Vyatta::Config;
 use Vyatta::TypeChecker;
 use NetAddr::IP;
+use File::Slurp;
 
 my $ccd_dir = '/opt/vyatta/etc/openvpn/ccd';
 my $status_dir = '/opt/vyatta/etc/openvpn/status';
@@ -63,6 +64,8 @@ my %fields = (
     _lzo_compress     => undef,
     _keepalive_interval	=> undef,
     _keepalive_failures	=> undef,
+    _auth_username	=> undef,
+    _auth_password	=> undef
 );
 
 my $iftype = 'interfaces openvpn';
@@ -189,6 +192,8 @@ sub setup {
     $self->{_qos_out} = $config->returnValue('traffic-policy out');
     $self->{_qos_in} = $config->returnValue('traffic-policy in');
     $self->{_redirect} = $config->returnValue('redirect');
+    $self->{_auth_username} = $config->returnValue('authentication username');
+    $self->{_auth_password} = $config->returnValue('authentication password');
     if ($config->exists('persistent-tunnel')) {
         $self->{_persistent_intf} = 1;
     }
@@ -315,6 +320,8 @@ sub setupOrig {
     $self->{_qos_out} = $config->returnOrigValue('traffic-policy out');
     $self->{_qos_in} = $config->returnOrigValue('traffic-policy in');
     $self->{_redirect} = $config->returnOrigValue('redirect');
+    $self->{_auth_username} = $config->returnOrigValue('authentication username');
+    $self->{_auth_password} = $config->returnOrigValue('authentication password');
     if ($config->existsOrig('persistent-tunnel')) {
         $self->{_persistent_intf} = 1;
     }
@@ -420,6 +427,8 @@ sub isRestartNeeded {
     return 1 if ($this->{_lzo_compress} ne $that->{_lzo_compress});
     return 1 if ($this->{_keepalive_interval} ne $that->{_keepalive_interval});
     return 1 if ($this->{_keepalive_failures} ne $that->{_keepalive_failures});
+    return 1 if ($this->{_auth_username} ne $that->{_auth_username});
+    return 1 if ($this->{_auth_password} ne $that->{_auth_password});
     return 0;
 }
 
@@ -479,6 +488,8 @@ sub isDifferentFrom {
     return 1 if ($this->{_lzo_compress} ne $that->{_lzo_compress});
     return 1 if ($this->{_keepalive_interval} ne $that->{_keepalive_interval});
     return 1 if ($this->{_keepalive_failures} ne $that->{_keepalive_failures});
+    return 1 if ($this->{_auth_username} ne $that->{_auth_username});
+    return 1 if ($this->{_auth_password} ne $that->{_auth_password});
     return 0;
 }
 
@@ -558,6 +569,11 @@ sub get_command {
         $ping_restart = $self->{_keepalive_interval} * $self->{_keepalive_failures};
     }
     my ($client, $server, $topo) = (0, 0, 'subnet');
+
+    my $password_auth_def = 0;
+    $password_auth_def = 1 if (defined($self->{_auth_username}) && defined($self->{_auth_password}));
+
+
     return (undef, 'Must specify "mode"')
         if (!defined($self->{_mode}));
     if ($self->{_mode} eq 'client') {
@@ -728,20 +744,23 @@ sub get_command {
             if ($hdrs != 0);
         $cmd .= " --ca $self->{_tls_ca}";
 
-        return (undef, 'Must specify "tls cert-file"')
-            if (!defined($self->{_tls_cert}));
-        $hdrs = checkHeader("-----BEGIN CERTIFICATE-----", $self->{_tls_cert});
-        return (undef, "Specified cert-file \"$self->{_tls_cert}\" is not valid")
-            if ($hdrs != 0);
-        $cmd .= " --cert $self->{_tls_cert}";
+        if( !($client && $password_auth_def) ) {
+            return (undef, 'Must specify "tls cert-file"')
+                if (!defined($self->{_tls_cert}));
+            $hdrs = checkHeader("-----BEGIN CERTIFICATE-----", $self->{_tls_cert});
+            return (undef, "Specified cert-file \"$self->{_tls_cert}\" is not valid")
+                if ($hdrs != 0);
+            $cmd .= " --cert $self->{_tls_cert}";
 
-        return (undef, 'Must specify "tls key-file"')
-            if (!defined($self->{_tls_key}));
-        $hdrs = checkHeader("-----BEGIN (?:RSA )?PRIVATE KEY-----", $self->{_tls_key});
-        return (undef, "Specified key-file \"$self->{_tls_key}\" is not valid")
-            if ($hdrs != 0);
-        $cmd .= " --key $self->{_tls_key}";
+            return (undef, 'Must specify "tls key-file"')
+                if (!defined($self->{_tls_key}));
+            $hdrs = checkHeader("-----BEGIN (?:RSA )?PRIVATE KEY-----", $self->{_tls_key});
+            return (undef, "Specified key-file \"$self->{_tls_key}\" is not valid")
+                if ($hdrs != 0);
+            $cmd .= " --key $self->{_tls_key}";
+        }
 
+        # does CRL make sense in client mode?
         if (defined($self->{_tls_crl})) {
             $hdrs = checkHeader("-----BEGIN X509 CRL-----", $self->{_tls_crl});
             return (undef, "Specified crl-file \"$self->{_tls_crl}\" is not valid")
@@ -785,6 +804,14 @@ sub get_command {
             return (undef, 'Must specify "tls role" in site-to-site mode')
                 if (!$client && !$server);
         }
+    }
+
+    if($password_auth_def) {
+        my $pw_file = "/config/auth/" . $self->{_intf} . "-pw";
+        my $pw_file_contents = $self->{_auth_username} . "\n" . $self->{_auth_password};
+        overwrite_file($pw_file, $pw_file_contents) ||
+            return(undef, 'Failed to create user/password file');
+        $cmd .= " --auth-user-pass $pw_file";
     }
 
     # secret file
