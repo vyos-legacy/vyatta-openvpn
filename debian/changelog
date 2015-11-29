@@ -1,3 +1,15 @@
+vyatta-openvpn (0.2.60+vyos3+rev2) unstable; urgency=low
+
+  * Force release
+
+ -- Daniil Baturin <daniil@baturin.org>  Sun, 29 Nov 2015 02:45:37 +0100
+
+vyatta-openvpn (0.2.60+vyos3+rev1) unstable; urgency=low
+
+  * Fix package version.
+
+ -- Daniil Baturin <daniil@baturin.org>  Sun, 29 Nov 2015 02:43:33 +0100
+
 vyatta-openvpn (0.2.60+vyos2+lithium8) unstable; urgency=low
 
   * i
