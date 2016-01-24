@@ -1,3 +1,12 @@
+vyatta-openvpn (0.2.60+vyos3+current1) unstable; urgency=medium
+
+  [ Thomas Jepp ]
+  * Add missing build dependencies.
+
+  [ Kim Hagen ]
+
+ -- Kim Hagen <kim.sidney@gmail.com>  Sun, 24 Jan 2016 15:23:32 -0500
+
 vyatta-openvpn (0.2.60+vyos3+rev3) unstable; urgency=low
 
   * Use --auth-retry nointeract for clients.
