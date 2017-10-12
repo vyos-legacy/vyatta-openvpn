@@ -864,17 +864,25 @@ sub get_command {
                 if ($self->{_server_mclients} <= 0);
             $cmd .= " --max-clients $self->{_server_mclients}";
         }
-        return (undef, 'Must specify "server subnet" option in server mode')
-            if (!defined($self->{_server_def}));
-        my $s = new NetAddr::IP "$self->{_server_subnet}";
-        my $n = $s->addr();
-        my $m = $s->mask();
-        my $l = $s->masklen();
-        return (undef, 'Must define "server subnet mask" 255.255.255.248 (/29) or lower')
-            if ($l gt "29" && !defined($self->{_bridge}) && !defined($self->{_device_type}));
-        if ($self->{_bridge}) {
+
+        # XXX: variables that used to be globals before moving the subnet checks
+        # inside a routed server check for T199, keep them global until refactoring
+        my $s = 0;
+        my $n = 0;
+        my $m = 0;
+        my $l = 0;
+
+        if (defined($self->{_bridge})) {
             $cmd .= " --server-bridge nogw";
         } else {
+            return (undef, 'Must specify "server subnet" option in server mode')
+                if (!defined($self->{_server_def}));
+            my $s = new NetAddr::IP "$self->{_server_subnet}";
+            my $n = $s->addr();
+            my $m = $s->mask();
+            my $l = $s->masklen();
+            return (undef, 'Must define "server subnet mask" 255.255.255.248 (/29) or lower')
+                if ($l gt "29" && !defined($self->{_bridge}) && !defined($self->{_device_type}));
             $cmd .= " --server $n $m";
         }
 
