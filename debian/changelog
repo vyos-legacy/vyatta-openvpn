@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.60+vyos1+helium9) unstable; urgency=low
+
+  * T449: fix the scope of server subnet/prefix variables
+
+ -- Daniil Baturin <daniil@baturin.org>  Fri, 10 Nov 2017 05:23:13 +0100
+
 vyatta-openvpn (0.2.60+vyos1+helium8) unstable; urgency=low
 
   * T199: do not check the server subnet if server is in bridged mode.
