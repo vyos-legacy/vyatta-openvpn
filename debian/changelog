@@ -1,3 +1,9 @@
+vyatta-openvpn (0.2.60+vyos3+current2) unstable; urgency=medium
+
+  * T571: Add packages for OpenVPN LDAP and RADIUS auth
+
+ -- Christian Poessinger <christian@poessinger.com>  Sat, 03 Mar 2018 16:54:51 +0100
+
 vyatta-openvpn (0.2.60+vyos3+current1) unstable; urgency=medium
 
   [ Thomas Jepp ]
