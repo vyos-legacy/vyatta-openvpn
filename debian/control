@@ -13,6 +13,7 @@ Depends: perl,
  vyatta-bash | bash (>= 3.1),
  openvpn,
  openvpn-auth-ldap,
- openvpn-auth-radius
+ openvpn-auth-radius,
+ libfile-slurp-perl
 Description: VyOS OpenVPN configuration/operational commands
  VyOS configuration/operational templates and scripts for OpenVPN
