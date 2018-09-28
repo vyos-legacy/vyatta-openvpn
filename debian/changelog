@@ -1,3 +1,9 @@
+vyatta-openvpn (1.2.0-1) stable; urgency=medium
+
+  * New branch.
+
+ -- Daniil Baturin <daniil@baturin.org>  Fri, 28 Sep 2018 22:04:31 +0200
+
 vyatta-openvpn (0.2.60+vyos3+current2) unstable; urgency=medium
 
   * T571: Add packages for OpenVPN LDAP and RADIUS auth
