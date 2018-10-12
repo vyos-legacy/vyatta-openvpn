@@ -1107,23 +1107,19 @@ sub configureBridge {
     if ($self->{_bridge}) {
 
         # Set port cost
-        my $cmd = "sudo brctl setpathcost $self->{_bridge} $self->{_intf}";
-        if ($self->{_bridgecost}) {
-            $cmd .= " $self->{_bridgecost}";
-        } else {
-            $cmd .= " 0";
+        if (defined($self->{_bridgecost})) {
+            my $pathcost_cmd = "sudo brctl setpathcost $self->{_bridge} $self->{_intf} $self->{_bridgecost}";
+            system($pathcost_cmd) == 0 or die "Error setting bridge cost for $self->{_intf}\n";
         }
-        system($cmd) == 0
-            or die "Error setting bridge cost for $self->{_intf}\n";
 
         # Set port priority
-        $cmd = "sudo brctl setportprio $self->{_bridge} $self->{_intf}";
+        my $prio_cmd = "sudo brctl setportprio $self->{_bridge} $self->{_intf}";
         if ($self->{_bridgeprio}) {
-            $cmd .= " $self->{_bridgeprio}";
+            $prio_cmd .= " $self->{_bridgeprio}";
         } else {
-            $cmd .= " 0";
+            $prio_cmd .= " 0";
         }
-        system($cmd) == 0
+        system($prio_cmd) == 0
             or die "Error setting bridge priority for $self->{_intf}\n";
     }
 }
