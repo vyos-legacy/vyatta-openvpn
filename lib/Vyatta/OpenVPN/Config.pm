@@ -66,7 +66,8 @@ my %fields = (
     _keepalive_interval	=> undef,
     _keepalive_failures	=> undef,
     _auth_username	=> undef,
-    _auth_password	=> undef
+    _auth_password	=> undef,
+    _authy_api          => undef
 );
 
 my $iftype = 'interfaces openvpn';
@@ -205,6 +206,7 @@ sub setup {
     $self->{_keepalive_failures} = $config->returnValue('keep-alive failure-count');
     my @options = $config->returnValues('openvpn-option');
     $self->{_options} = \@options;
+    $self->{_authy_api} = $config->returnValue('server 2-factor-authentication authy api-key');
 
     return 0;
 }
@@ -333,6 +335,7 @@ sub setupOrig {
     $self->{_keepalive_failures} = $config->returnOrigValue('keep-alive failure-count');
     my @options = $config->returnOrigValues('openvpn-option');
     $self->{_options} = \@options;
+    $self->{_authy_api} = $config->returnOrigValues('server 2-factor-authentication authy api-key');
 
     return 0;
 }
@@ -430,6 +433,7 @@ sub isRestartNeeded {
     return 1 if ($this->{_keepalive_failures} ne $that->{_keepalive_failures});
     return 1 if ($this->{_auth_username} ne $that->{_auth_username});
     return 1 if ($this->{_auth_password} ne $that->{_auth_password});
+    return 1 if ($this->{_authy_api} ne $that->{_authy_api});
     return 0;
 }
 
@@ -491,6 +495,7 @@ sub isDifferentFrom {
     return 1 if ($this->{_keepalive_failures} ne $that->{_keepalive_failures});
     return 1 if ($this->{_auth_username} ne $that->{_auth_username});
     return 1 if ($this->{_auth_password} ne $that->{_auth_password});
+    return 1 if ($this->{_authy_api} ne $that->{_authy_api});
     return 0;
 }
 
@@ -1006,9 +1011,14 @@ sub get_command {
         }
     }
 
+    # 2 factor authentication
+    if (defined($self->{_authy_api})) {
+        push(@conf_file, "\nplugin /usr/lib/authy/authy-openvpn.so https://api.authy.com/protected/json $self->{_authy_api} nopam\n");
+    }
+
     open ($fh,">$configs_dir/openvpn-$self->{_intf}.conf");
     foreach (@conf_file) {
-      print $fh "$_";
+        print $fh "$_";
     }
     close $fh;
 

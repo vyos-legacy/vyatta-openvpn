@@ -1,0 +1,12 @@
+tag:
+type: txt
+help: Authy users (must be email address)
+val_help: <email address>; User mail address
+syntax:expression: pattern $VAR(@) "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$" ; "invalid email address \"$VAR(@)\""
+
+commit:expression: $VAR(../api-key/@@) != ""; \
+                   "\"api-key\" must be configured for $VAR(.) $VAR(@)"
+
+update:expression: "sudo sh -c \"/usr/sbin/authy-vpn-add-user $VAR(@) $VAR(@) $VAR(./country-calling-code/@) $VAR(./phone-number/@) $VAR(../api-key/@)\" "
+
+delete:expression: "sudo sh -c \"/usr/sbin/authy-vpn-add-user $VAR(@) $VAR(@) $VAR(./country-calling-code/@) $VAR(./phone-number/@) $VAR(../api-key/@) delete\" "
