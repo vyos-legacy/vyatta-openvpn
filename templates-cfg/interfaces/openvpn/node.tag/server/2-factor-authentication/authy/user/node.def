@@ -1,4 +1,5 @@
 tag:
+priority: 470
 type: txt
 help: Authy users (must be email address)
 val_help: <email address>; User mail address
