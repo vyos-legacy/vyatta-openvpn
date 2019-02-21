@@ -842,7 +842,7 @@ sub get_command {
                         return (undef, 'Must specify IP address for "name-server"');
                     }
                 }
-                $cmd .= " --push dhcp-option DNS $nserver";
+                $cmd .= ' --push "dhcp-option DNS $nserver"';
             }
         }
 
@@ -851,12 +851,12 @@ sub get_command {
                 my $s = new NetAddr::IP "$proute";
                 my $n = $s->addr();
                 my $m = $s->mask();
-                $cmd .= " --push route $n $m";
+                $cmd .= ' --push "route $n $m"';
             }
         }
 
         if (defined($self->{_dns_suffix})) {
-            $cmd .= " --push dhcp-option DOMAIN $self->{_dns_suffix}";
+            $cmd .= ' --push "dhcp-option DOMAIN $self->{_dns_suffix}"';
         }
 
         if (defined($self->{_server_mclients})) {
