@@ -754,7 +754,7 @@ sub get_command {
 
             return (undef, 'Must specify "tls key-file"')
                 if (!defined($self->{_tls_key}));
-            $hdrs = checkHeader("-----BEGIN (?:RSA )?PRIVATE KEY-----", $self->{_tls_key});
+            $hdrs = checkHeader("-----BEGIN (?:RSA |EC )?PRIVATE KEY-----", $self->{_tls_key});
             return (undef, "Specified key-file \"$self->{_tls_key}\" is not valid")
                 if ($hdrs != 0);
             $cmd .= " --key $self->{_tls_key}";
