@@ -9,6 +9,7 @@ use Vyatta::TypeChecker;
 use NetAddr::IP;
 use File::Slurp;
 
+my $configs_dir = '/opt/vyatta/etc/openvpn';
 my $ccd_dir = '/opt/vyatta/etc/openvpn/ccd';
 my $status_dir = '/opt/vyatta/etc/openvpn/status';
 my $status_itvl = 30;
@@ -65,7 +66,8 @@ my %fields = (
     _keepalive_interval	=> undef,
     _keepalive_failures	=> undef,
     _auth_username	=> undef,
-    _auth_password	=> undef
+    _auth_password	=> undef,
+    _authy_api          => undef
 );
 
 my $iftype = 'interfaces openvpn';
@@ -204,6 +206,7 @@ sub setup {
     $self->{_keepalive_failures} = $config->returnValue('keep-alive failure-count');
     my @options = $config->returnValues('openvpn-option');
     $self->{_options} = \@options;
+    $self->{_authy_api} = $config->returnValue('server 2-factor-authentication authy api-key');
 
     return 0;
 }
@@ -332,6 +335,7 @@ sub setupOrig {
     $self->{_keepalive_failures} = $config->returnOrigValue('keep-alive failure-count');
     my @options = $config->returnOrigValues('openvpn-option');
     $self->{_options} = \@options;
+    $self->{_authy_api} = $config->returnOrigValues('server 2-factor-authentication authy api-key');
 
     return 0;
 }
@@ -429,6 +433,7 @@ sub isRestartNeeded {
     return 1 if ($this->{_keepalive_failures} ne $that->{_keepalive_failures});
     return 1 if ($this->{_auth_username} ne $that->{_auth_username});
     return 1 if ($this->{_auth_password} ne $that->{_auth_password});
+    return 1 if ($this->{_authy_api} ne $that->{_authy_api});
     return 0;
 }
 
@@ -490,6 +495,7 @@ sub isDifferentFrom {
     return 1 if ($this->{_keepalive_failures} ne $that->{_keepalive_failures});
     return 1 if ($this->{_auth_username} ne $that->{_auth_username});
     return 1 if ($this->{_auth_password} ne $that->{_auth_password});
+    return 1 if ($this->{_authy_api} ne $that->{_authy_api});
     return 0;
 }
 
@@ -530,7 +536,15 @@ sub checkHeader {
 
 sub get_command {
     my ($self) = @_;
-    my $cmd = "/usr/sbin/openvpn --daemon openvpn-$self->{_intf} --verb 3 --writepid /var/run/openvpn-$self->{_intf}.pid";
+    my $cmd = "/usr/sbin/openvpn --daemon openvpn-$self->{_intf} --writepid /var/run/openvpn-$self->{_intf}.pid --config $configs_dir/openvpn-$self->{_intf}.conf";
+    my @conf_file = ();
+
+    open (my $fh,">$configs_dir/openvpn-$self->{_intf}.conf") or die("Can't open $configs_dir/openvpn-$self->{_intf}.conf: $!\n");
+    print $fh "";
+    close $fh;
+ 
+    push(@conf_file, "verb 3\n");
+
     if ($self->{_disable}) {
         return ('disable', undef);
     }
@@ -539,12 +553,12 @@ sub get_command {
         if ($self->{_mode} ne 'server') {
             return (undef, 'Can specify "reject-unconfigured-clients" in server mode only');
         } else {
-            $cmd .= " --ccd-exclusive ";
+            push(@conf_file, "ccd-exclusive\n");
         }
     }
 
     # status
-    $cmd .= " --status $status_dir/$self->{_intf}.status $status_itvl";
+    push(@conf_file, "status $status_dir/$self->{_intf}.status $status_itvl\n");
 
     # interface
     my $type = 'tun';
@@ -553,7 +567,8 @@ sub get_command {
     } else {
         $type = 'tun';
     }
-    $cmd .= " --dev-type $type --dev $self->{_intf}";
+    push(@conf_file, "dev-type $type\n");
+    push(@conf_file, "dev $self->{_intf}\n");
 
     my ($tcp_p, $tcp_a) = (0, 0);
     if (defined($self->{_proto})) {
@@ -585,7 +600,8 @@ sub get_command {
         return (undef, 'Protocol "tcp-passive" is not valid in client mode')
             if ($tcp_p);
         $client = 1;
-        $cmd .= ' --client --nobind';
+        push(@conf_file, "client\n");
+        push(@conf_file, "nobind\n");
     } elsif ($self->{_mode} eq 'server') {
         return (undef, 'Protocol "tcp-active" is not valid in server mode')
             if ($tcp_a);
@@ -596,11 +612,14 @@ sub get_command {
         if (defined($self->{_topo}) && $self->{_topo} eq 'point-to-point') {
             $topo = 'p2p';
         }
-        $cmd .= " --mode server --tls-server --topology $topo";
-        $cmd .= " --keepalive $ping_itvl $ping_restart";
+        push(@conf_file, "mode server\n");
+        push(@conf_file, "tls-server\n");
+        push(@conf_file, "topology $topo\n");
+        push(@conf_file, "keepalive $ping_itvl $ping_restart\n");
     } else {
         # site-to-site
-        $cmd .= " --ping $ping_itvl --ping-restart $ping_restart";
+        push(@conf_file, "ping $ping_itvl\n");
+        push(@conf_file, "ping-restart $ping_restart\n");
     }
 
     return (undef, 'The "topology" option is only valid in server mode')
@@ -628,9 +647,9 @@ sub get_command {
         if ($self->{_device_type}) {
             return (undef, 'Must specify "subnet-mask" for local-address')
                 if (!($self->{_laddr_subnet}));
-            $cmd .= " --ifconfig $self->{_local_addr} $self->{_laddr_subnet}";
+            push(@conf_file, "ifconfig $self->{_local_addr} $self->{_laddr_subnet}\n");
         }else {
-            $cmd .= " --ifconfig $self->{_local_addr} $self->{_remote_addr}";
+            push(@conf_file, "ifconfig $self->{_local_addr} $self->{_remote_addr}\n");
         }
     } else {
         return (undef, 'Cannot specify "local-address" or "remote-address" in '. 'client-server or bridge mode')
@@ -654,7 +673,7 @@ sub get_command {
             }
         }
         if ($is_there == 1) {
-            $cmd .= " --local $self->{_local_host}";
+            push(@conf_file, "local $self->{_local_host}\n");
         } else {
             return (undef,"No interface on system with specified local-host IP address $self->{_local_host}");
         }
@@ -664,21 +683,21 @@ sub get_command {
     if (defined($self->{_local_port})) {
         return (undef, 'Cannot specify "local-port" with "tcp-active"')
             if ($tcp_a);
-        $cmd .= " --lport $self->{_local_port}";
+        push(@conf_file, "lport $self->{_local_port}\n");
     }
 
     # remote port
     if (defined($self->{_remote_port})) {
         return (undef, 'Cannot specify "remote-port" in server mode')
             if ($server);
-        $cmd .= " --rport $self->{_remote_port}";
+        push(@conf_file, "rport $self->{_remote_port}\n");
     }
 
     # protocol
     if ($tcp_p) {
-        $cmd .= " --proto tcp-server";
+        push(@conf_file, "proto tcp-server\n");
     } elsif ($tcp_a) {
-        $cmd .= " --proto tcp-client";
+        push(@conf_file, "proto tcp-client\n");
     }
 
     # remote host
@@ -696,7 +715,7 @@ sub get_command {
                     return (undef, 'Must specify IP or hostname for "remote-host"');
                 }
             }
-            $cmd .= " --remote $rhost";
+            push(@conf_file, "remote $rhost\n");
         }
     } elsif ($client) {
         return (undef, 'Must specify "remote-host" in client mode');
@@ -711,21 +730,22 @@ sub get_command {
         my $qos_out = defined($self->{_qos_out}) ? $self->{_qos_out} : "__undef";
         my $qos_in = defined($self->{_qos_in}) ? $self->{_qos_in} : "__undef";
         my $redirect = defined($self->{_redirect}) ? $self->{_redirect} : "__undef";
-        $cmd .= " --up '/opt/vyatta/sbin/vyatta-qos-up $self->{_intf} $qos_out $qos_in $redirect' --script-security 2";
+        push(@conf_file, "up '/opt/vyatta/sbin/vyatta-qos-up $self->{_intf} $qos_out $qos_in $redirect'\n");
+        push(@conf_file, "script-security 2\n");
     }
 
     # encryption
     if (defined($self->{_encrypt})) {
         return (undef, "\"$self->{_encrypt}\" is not a valid algorithm")
             if (!defined($encryption_cmd_hash{$self->{_encrypt}}));
-        $cmd .= $encryption_cmd_hash{$self->{_encrypt}};
+        push(@conf_file, $encryption_cmd_hash{$self->{_encrypt}},"\n");
     }
 
     # hash
     if (defined($self->{_hash})) {
         return (undef, "\"$self->{_hash}\" is not a valid algorithm")
             if (!defined($hash_cmd_hash{$self->{_hash}}));
-        $cmd .= $hash_cmd_hash{$self->{_hash}};
+        push(@conf_file, $hash_cmd_hash{$self->{_hash}}, "\n");
     }
 
     # secret & tls
@@ -743,7 +763,7 @@ sub get_command {
         my $hdrs = checkHeader("-----BEGIN CERTIFICATE-----",$self->{_tls_ca});
         return (undef, "Specified ca-cert-file \"$self->{_tls_ca}\" is not valid")
             if ($hdrs != 0);
-        $cmd .= " --ca $self->{_tls_ca}";
+        push(@conf_file, "ca $self->{_tls_ca}\n");
 
         if( !($client && $password_auth_def) ) {
             return (undef, 'Must specify "tls cert-file"')
@@ -756,14 +776,15 @@ sub get_command {
             $hdrs = checkHeader("-----BEGIN CERTIFICATE-----", $self->{_tls_cert});
             return (undef, "Specified cert-file \"$self->{_tls_cert}\" is not valid")
                 if ($hdrs != 0);
-            $cmd .= " --cert $self->{_tls_cert}";
+                
+            push(@conf_file, "cert $self->{_tls_cert}\n");
         }
 
         if (defined($self->{_tls_key})) {
             $hdrs = checkHeader("-----BEGIN (?:RSA )?PRIVATE KEY-----", $self->{_tls_key});
             return (undef, "Specified key-file \"$self->{_tls_key}\" is not valid")
                 if ($hdrs != 0);
-            $cmd .= " --key $self->{_tls_key}";
+            push(@conf_file, "key $self->{_tls_key}\n");
         }
 
         # does CRL make sense in client mode?
@@ -771,7 +792,7 @@ sub get_command {
             $hdrs = checkHeader("-----BEGIN X509 CRL-----", $self->{_tls_crl});
             return (undef, "Specified crl-file \"$self->{_tls_crl}\" is not valid")
                 if ($hdrs != 0);
-            $cmd .= " --crl-verify $self->{_tls_crl}";
+            push(@conf_file, "crl-verify $self->{_tls_crl}\n");
         }
 
         if (!defined($self->{_tls_dh})) {
@@ -783,7 +804,7 @@ sub get_command {
             $hdrs = checkHeader("-----BEGIN DH PARAMETERS-----",$self->{_tls_dh});
             return (undef, "Specified dh-file \"$self->{_tls_dh}\" is not valid")
                 if ($hdrs != 0);
-            $cmd .= " --dh $self->{_tls_dh}";
+            push(@conf_file, "dh $self->{_tls_dh}\n");
         }
 
         if (defined($self->{_tls_role})) {
@@ -796,13 +817,13 @@ sub get_command {
                     if ($tcp_p);
                 return (undef,'Cannot specify "tls dh-file" when "tls role" is "active"')
                     if (defined($self->{_tls_dh}));
-                $cmd .= ' --tls-client';
+                push(@conf_file, "tls-client\n");
             } elsif ($self->{_tls_role} eq 'passive') {
                 return (undef,'Cannot specify "tcp-active" when "tls role" is "passive"')
                     if ($tcp_a);
                 return (undef,'Must specify "tls dh-file" when "tls role" is "passive"')
                     if (!defined($self->{_tls_dh}));
-                $cmd .= ' --tls-server';
+                push(@conf_file, "tls-server\n");
             }
         } else {
 
@@ -817,7 +838,8 @@ sub get_command {
         my $pw_file_contents = $self->{_auth_username} . "\n" . $self->{_auth_password};
         overwrite_file($pw_file, $pw_file_contents) ||
             return(undef, 'Failed to create user/password file');
-        $cmd .= " --auth-user-pass $pw_file --auth-retry nointeract";
+        push(@conf_file, "auth-user-pass $pw_file\n");
+        push(@conf_file, "auth-retry nointeract\n");
     }
 
     # secret file
@@ -827,17 +849,17 @@ sub get_command {
             if ($hdrs != 0);
 
         # we can further validate the secret file
-        $cmd .= " --secret $self->{_secret_file}";
+        push(@conf_file, "secret $self->{_secret_file}\n");
     }
 
     # "server" subsection
     if ($server) {
-        $cmd .= ' --management /tmp/openvpn-mgmt-intf unix';
+        push(@conf_file, "management /tmp/openvpn-mgmt-intf unix\n");
         if (defined($self->{_r_def_route})) {
             if (defined($self->{_r_def_rt_loc})) {
-                $cmd .= ' --push "redirect-gateway local def1" ';
+                push(@conf_file, "push \"redirect-gateway local def1\"\n");
             } else {
-                $cmd .= ' --push "redirect-gateway def1" ';
+                push(@conf_file, "push \"redirect-gateway def1\"\n");
             }
         }
 
@@ -848,7 +870,7 @@ sub get_command {
                         return (undef, 'Must specify IP address for "name-server"');
                     }
                 }
-                $cmd .= " --push \"dhcp-option DNS $nserver\"";
+                push(@conf_file, "push dhcp-option DNS $nserver\n");
             }
         }
 
@@ -857,18 +879,19 @@ sub get_command {
                 my $s = new NetAddr::IP "$proute";
                 my $n = $s->addr();
                 my $m = $s->mask();
-                $cmd .= " --push \"route $n $m\"";
+                
+                push(@conf_file, "push route $n $m\n");
             }
         }
 
         if (defined($self->{_dns_suffix})) {
-            $cmd .= " --push \"dhcp-option DOMAIN $self->{_dns_suffix}\"";
+            push(@conf_file, "push dhcp-option DOMAIN $self->{_dns_suffix}\n");
         }
 
         if (defined($self->{_server_mclients})) {
             return (undef, 'Maximum client connection cannot be set to 0 or less')
                 if ($self->{_server_mclients} <= 0);
-            $cmd .= " --max-clients $self->{_server_mclients}";
+            push(@conf_file, "max-clients $self->{_server_mclients}\n");
         }
 
         # XXX: variables that used to be globals before moving the subnet checks
@@ -879,7 +902,7 @@ sub get_command {
         my $l = 0;
 
         if (defined($self->{_bridge})) {
-            $cmd .= " --server-bridge nogw";
+            push(@conf_file, "server-bridge nogw\n");
         } else {
             return (undef, 'Must specify "server subnet" option in server mode')
                 if (!defined($self->{_server_def}));
@@ -889,7 +912,7 @@ sub get_command {
             $l = $s->masklen();
             return (undef, 'Must define "server subnet mask" 255.255.255.248 (/29) or lower')
                 if ($l gt "29" && !defined($self->{_bridge}) && !defined($self->{_device_type}));
-            $cmd .= " --server $n $m";
+            push(@conf_file, "server $n $m\n");
         }
 
         # per-client config specified. write them out.
@@ -962,38 +985,50 @@ sub get_command {
                 }
             }
         }
-        $cmd .= " --client-config-dir $ccd_dir";
+        push(@conf_file, "client-config-dir $ccd_dir\n");
     } else {
         if (defined($self->{_r_def_route})) {
             return (undef,'Cannot set "replace-default-route" without "remote-host"')
                 if (scalar(@{$self->{_remote_host}}) <= 0);
 
             if (defined($self->{_r_def_rt_loc})) {
-                $cmd .= ' --redirect-gateway local def1 ';
+                push(@conf_file, "redirect-gateway local def1\n");
             } else {
-                $cmd .= ' --redirect-gateway def1 ';
+                push(@conf_file, "redirect-gateway def1\n");
             }
         }
     }
     
     if ($self->{_persistent_intf}) {
-        $cmd .= " --persist-tun";
+        push(@conf_file, "persist-tun\n");
     }
 
     if ($self->{_lzo_compress}) {
-        $cmd .= " --comp-lzo";
+        push(@conf_file, "comp-lzo\n");
     }
     
     # extra options
     if (scalar(@{$self->{_options}}) > 0) {
         for my $option (@{$self->{_options}}) {
             if ($option =~ /^--/) {
-                $cmd .= " $option";
+                $option = substr $option, 2;
+                push(@conf_file, "$option\n");
             } else {
-                $cmd .= " --$option";
+                push(@conf_file, "$option\n");
             }
         }
     }
+
+    # 2 factor authentication
+    if (defined($self->{_authy_api})) {
+        push(@conf_file, "\nplugin /usr/lib/authy/authy-openvpn.so https://api.authy.com/protected/json $self->{_authy_api} nopam\n");
+    }
+
+    open ($fh,">$configs_dir/openvpn-$self->{_intf}.conf");
+    foreach (@conf_file) {
+        print $fh "$_";
+    }
+    close $fh;
 
     return ($cmd, undef);
 }
@@ -1028,7 +1063,7 @@ sub isEmpty {
 sub wait_until_dead {
     my ($intf,$kill_repeatedly) = @_;
     my ($i, $done) = (0, 0);
-    my $PGREP = "pgrep -f '^/usr/sbin/openvpn .* --dev " . $intf . " --'";
+    my $PGREP = "pgrep -f '^/usr/sbin/openvpn --daemon openvpn-".$intf." --'";
 
     while ($i < 10) {
         if ($kill_repeatedly) {
@@ -1049,7 +1084,7 @@ sub wait_until_dead {
 #STATIC function
 sub kill_daemon {
     my ($intf) = @_;
-    my $PGREP = "pgrep -f '^/usr/sbin/openvpn .* --dev " . $intf . " --'";
+    my $PGREP = "pgrep -f '^/usr/sbin/openvpn --daemon openvpn-".$intf." --'";
 
     system("$PGREP >&/dev/null");
     if ($? >> 8) {
