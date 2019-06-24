@@ -507,6 +507,7 @@ my %hash_cmd_hash = (
     'md5' => ' --auth md5',
     'sha1' => ' --auth sha1',
     'sha256' => ' --auth sha256',
+    'sha384' => ' --auth sha384',
     'sha512' => ' --auth sha512',
 );
 
