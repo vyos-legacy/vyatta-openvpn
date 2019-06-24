@@ -513,6 +513,7 @@ my %hash_cmd_hash = (
     'md5' => ' --auth md5',
     'sha1' => ' --auth sha1',
     'sha256' => ' --auth sha256',
+    'sha384' => ' --auth sha384',
     'sha512' => ' --auth sha512',
 );
 
@@ -767,13 +768,19 @@ sub get_command {
         if( !($client && $password_auth_def) ) {
             return (undef, 'Must specify "tls cert-file"')
                 if (!defined($self->{_tls_cert}));
+            return (undef, 'Must specify "tls key-file"')
+                if (!defined($self->{_tls_key}));
+        }
+
+        if (defined($self->{_tls_cert})) {
             $hdrs = checkHeader("-----BEGIN CERTIFICATE-----", $self->{_tls_cert});
             return (undef, "Specified cert-file \"$self->{_tls_cert}\" is not valid")
                 if ($hdrs != 0);
+                
             push(@conf_file, "cert $self->{_tls_cert}\n");
+        }
 
-            return (undef, 'Must specify "tls key-file"')
-                if (!defined($self->{_tls_key}));
+        if (defined($self->{_tls_key})) {
             $hdrs = checkHeader("-----BEGIN (?:RSA )?PRIVATE KEY-----", $self->{_tls_key});
             return (undef, "Specified key-file \"$self->{_tls_key}\" is not valid")
                 if ($hdrs != 0);
@@ -872,6 +879,7 @@ sub get_command {
                 my $s = new NetAddr::IP "$proute";
                 my $n = $s->addr();
                 my $m = $s->mask();
+                
                 push(@conf_file, "push route $n $m\n");
             }
         }
@@ -960,7 +968,7 @@ sub get_command {
                     my $cs = new NetAddr::IP "${$ref}[$i]";
                     my $cn = $cs->addr();
                     my $cm = $cs->mask();
-                    system("echo push \"route $cn $cm\" >> $ccd_dir/$client");
+                    system("echo \Qpush \"route $cn $cm\"\E >> $ccd_dir/$client");
                     return (undef, 'Cannot generate per-client configurations')
                         if ($? >> 8);
                     $i += 1;
