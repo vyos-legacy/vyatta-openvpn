@@ -944,7 +944,7 @@ sub get_command {
                     my $cs = new NetAddr::IP "${$ref}[$i]";
                     my $cn = $cs->addr();
                     my $cm = $cs->mask();
-                    system("echo push \"route $cn $cm\" >> $ccd_dir/$client");
+                    system("echo \Qpush \"route $cn $cm\"\E >> $ccd_dir/$client");
                     return (undef, 'Cannot generate per-client configurations')
                         if ($? >> 8);
                     $i += 1;
