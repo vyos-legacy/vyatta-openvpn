@@ -1,5 +1,0 @@
-type: txt
-help: Interface to a bridge-group
-allowed: /opt/vyatta/sbin/vyatta-interfaces.pl --show=bridge
-commit:expression: exec \
-   "/opt/vyatta/sbin/vyatta-interfaces.pl --dev=$VAR(@) --check=bridge"
