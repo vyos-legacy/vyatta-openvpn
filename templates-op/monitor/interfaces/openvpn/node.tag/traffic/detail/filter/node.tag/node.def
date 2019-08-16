@@ -1,3 +1,0 @@
-help: Monitor detailed filtered traffic for the specified openvpn interface
-allowed: echo -e '<pcap-filter>'
-run: ${vyatta_bindir}/vyatta-tshark.pl --intf $4 --detail --filter "${@:8}"
