@@ -1,2 +1,0 @@
-help: Monitor detailed traffic for the specified openvpn interface
-run: ${vyatta_bindir}/vyatta-tshark.pl --intf $4 --detail

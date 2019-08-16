@@ -1,2 +1,0 @@
-help: Montior captured traffic on specified openvpn interface
-run: ${vyatta_bindir}/vyatta-tshark.pl --intf $4
