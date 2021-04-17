@@ -1,2 +1,7 @@
 This package has the Vyatta configuration/operational templates and scripts
 for the OpenVPN feature.
+
+# NOTE
+
+This package is deprecated and all it's content was rewritten. You can find the
+new implementation here: https://github.com/vyos/vyos-1x
